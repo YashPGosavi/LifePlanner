@@ -1033,7 +1033,7 @@ select option {
 
     #header-footer {
         display: block !important;
-        padding: 12px 20px 20px;
+        padding: 12px 20px 0;
         border-top: 1px solid var(--border);
         font-size: 10px;
         font-family: monospace;
@@ -1117,18 +1117,12 @@ select option {
 }
 
 #app {
-    display: flex;
-    flex-direction: column;
-
-    height: 100dvh;
-    height: calc(var(--vh, 1vh)*100);
-
-    /* minimal safe area only */
-    padding-top: var(--safe-top);
-    padding-bottom: var(--safe-bot);
-    padding-left: 8px;
-    padding-right: 8px;
-
     border-radius: 18px;
     overflow: hidden;
+
+    /* new spacing */
+    padding-top: calc(var(--safe-top) + 6px);
+    padding-bottom: calc(var(--safe-bot) + 6px);
+    padding-left: calc(var(--safe-left) + 8px);
+    padding-right: calc(var(--safe-right) + 8px);
 }
