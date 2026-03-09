@@ -1509,18 +1509,60 @@ function obStart() {
 /* ══════════════════════════════════
    INIT
 ══════════════════════════════════ */
+
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && S.modal) closeModal();
 });
+
+/* Viewport height fix (fallback only) */
 function setVH() {
   document.documentElement.style.setProperty(
     "--vh",
-    `${window.innerHeight * 0.01}px`,
+    `${window.innerHeight * 0.01}px`
   );
 }
-window.addEventListener("resize", () => {
-  setVH();
-  render();
-});
+
 setVH();
+
+/* Resize handling */
+let resizeTimeout;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    setVH();
+    render();
+  }, 150);
+});
+
+/* Initial render */
 render();
+
+/* ══════════════════════════════════
+   SERVICE WORKER
+══════════════════════════════════ */
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
+    try {
+      const reg = await navigator.serviceWorker.register("/service-worker.js");
+
+      console.log("Service Worker registered");
+
+      // update check
+      reg.onupdatefound = () => {
+        const newWorker = reg.installing;
+
+        newWorker.onstatechange = () => {
+          if (
+            newWorker.state === "installed" &&
+            navigator.serviceWorker.controller
+          ) {
+            console.log("New version available");
+          }
+        };
+      };
+    } catch (err) {
+      console.error("Service Worker failed:", err);
+    }
+  });
+}
