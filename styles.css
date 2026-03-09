@@ -30,13 +30,17 @@ html{
   --orange: #f18c35;
   --text: #f0f0f0;
   --muted: #666680;
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bot: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-top: env(safe-area-inset-top);
+  --safe-bot: env(safe-area-inset-bottom);
+  --safe-left: env(safe-area-inset-left);
+  --safe-right: env(safe-area-inset-right);
   --nav-w: 230px;
   --mono: "DM Mono", monospace;
   --sans: "DM Sans", system-ui, sans-serif;
+}
+
+body{
+padding-top:var(--safe-top);
 }
 
 html,
@@ -2346,11 +2350,4 @@ select option {
     grid-template-columns: 1fr 1fr;
     gap: 14px;
   }
-}
-
-:root {
-  --safe-top: env(safe-area-inset-top);
-  --safe-bottom: env(safe-area-inset-bottom);
-  --safe-left: env(safe-area-inset-left);
-  --safe-right: env(safe-area-inset-right);
 }
