@@ -1033,7 +1033,7 @@ select option {
 
     #header-footer {
         display: block !important;
-        padding: 12px 20px 0;
+        padding: 12px 20px 20px;
         border-top: 1px solid var(--border);
         font-size: 10px;
         font-family: monospace;
