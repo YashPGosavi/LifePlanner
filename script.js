@@ -289,11 +289,11 @@ function vDaily() {
     schedItems.length === 0
       ? `<div style="font-size:12px;font-family:var(--mono);color:${C.muted};text-align:center;padding:10px 0;">No events — tap + to add</div>`
       : schedItems
-          .map(
-            (item, i) =>
-              `<div class="sched-item"><div class="sched-badge">${esc(item.time)}</div><div class="sched-text">${esc(item.text)}</div><button class="sched-del" onclick="deleteSchedItem(${i})">✕</button></div>`,
-          )
-          .join("");
+        .map(
+          (item, i) =>
+            `<div class="sched-item"><div class="sched-badge">${esc(item.time)}</div><div class="sched-text">${esc(item.text)}</div><button class="sched-del" onclick="deleteSchedItem(${i})">✕</button></div>`,
+        )
+        .join("");
 
   // Money summary
   const entries = p.moneyEntries || [];
@@ -541,12 +541,12 @@ function vWeekly() {
 
 <div class="wk-cols card-solo" style="margin-bottom:14px;">
   ${wdays
-    .map((date) => {
-      const pp = getDayPlan(date),
-        today = isToday(date),
-        sv = pp.steps || 0,
-        sok = sv >= STEPS_GOAL * 0.5;
-      return `<div class="wk-col" style="${today ? `border-color:${C.accent};background:linear-gradient(135deg,${C.surface},${C.accent}08);` : ""}" onclick="jumpToDate('${dk(date)}')">
+      .map((date) => {
+        const pp = getDayPlan(date),
+          today = isToday(date),
+          sv = pp.steps || 0,
+          sok = sv >= STEPS_GOAL * 0.5;
+        return `<div class="wk-col" style="${today ? `border-color:${C.accent};background:linear-gradient(135deg,${C.surface},${C.accent}08);` : ""}" onclick="jumpToDate('${dk(date)}')">
     <div style="font-size:9px;font-family:var(--mono);color:${today ? C.accent : C.muted};font-weight:600;">${fmt(date, { weekday: "short" }).toUpperCase()}</div>
     <div style="font-size:22px;font-weight:700;color:${today ? C.accent : C.text};">${new Date(date).getDate()}</div>
     ${pp.mood != null ? `<div style="font-size:18px;">${MOODS[pp.mood]?.emoji}</div>` : `<div style="font-size:16px;opacity:.15;">·</div>`}
@@ -556,44 +556,43 @@ function vWeekly() {
     ${(pp.todos || []).filter((t) => t.isDone).length > 0 ? `<div style="font-size:9px;font-family:var(--mono);color:${C.blue};">✅${(pp.todos || []).filter((t) => t.isDone).length}</div>` : ""}
     ${(pp.waterGlasses || 0) > 0 ? `<div style="font-size:9px;font-family:var(--mono);color:${C.blue};">💧${pp.waterGlasses}</div>` : ""}
   </div>`;
-    })
-    .join("")}
+      })
+      .join("")}
 </div>
 
 <!-- Habit Matrix + Week Summary side by side -->
 <div class="card-pair">
   <div class="card">
     <span class="slabel">Habit Matrix</span>
-    ${
-      S.habits.length === 0
-        ? `<div style="font-size:12px;font-family:var(--mono);color:${C.muted};">No habits to show</div>`
-        : `
+    ${S.habits.length === 0
+      ? `<div style="font-size:12px;font-family:var(--mono);color:${C.muted};">No habits to show</div>`
+      : `
     <div style="display:flex;align-items:center;gap:4px;margin-bottom:10px;">
       <div style="flex:1;font-size:9px;font-family:var(--mono);color:${C.muted};">HABIT</div>
       ${wdays.map((d) => `<div style="width:28px;text-align:center;font-size:9px;font-family:var(--mono);color:${isToday(d) ? C.accent : C.muted};">${fmt(d, { weekday: "narrow" })}</div>`).join("")}
       <div style="width:36px;font-size:9px;font-family:var(--mono);color:${C.muted};text-align:center;">%</div>
     </div>
     ${S.habits
-      .map((h) => {
-        const allowedDays = wdays.filter((d) => habitAllowedOnDate(h, d));
-        const doneDays = allowedDays.filter((d) =>
-          (getDayPlan(d).habitsDone || []).includes(h.id),
-        );
+        .map((h) => {
+          const allowedDays = wdays.filter((d) => habitAllowedOnDate(h, d));
+          const doneDays = allowedDays.filter((d) =>
+            (getDayPlan(d).habitsDone || []).includes(h.id),
+          );
 
-        const cnt = doneDays.length;
-        const pct = allowedDays.length > 0 ? cnt / allowedDays.length : 0;
-        return `<div class="hm-row"><div style="flex:1;font-size:12px;display:flex;align-items:center;gap:5px;overflow:hidden;"><span>${h.emoji}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(h.name)}</span></div>${wdays
-          .map((d) => {
-            const allowed = habitAllowedOnDate(h, d);
-            const done =
-              allowed && (getDayPlan(d).habitsDone || []).includes(h.id);
-            return `<div style="width:24px;height:24px;border-radius:5px;background:${!allowed ? C.surface2 : done ? h.color : h.color + "20"};display:flex;align-items:center;justify-content:center;">${done ? `<span style="font-size:10px;font-weight:900;color:#000;">✓</span>` : ""}</div>`;
-          })
-          .join(
-            "",
-          )}<div style="width:36px;font-size:10px;font-family:var(--mono);color:${h.color};text-align:center;">${Math.round(pct * 100)}%</div></div>`;
-      })
-      .join("")}`
+          const cnt = doneDays.length;
+          const pct = allowedDays.length > 0 ? cnt / allowedDays.length : 0;
+          return `<div class="hm-row"><div style="flex:1;font-size:12px;display:flex;align-items:center;gap:5px;overflow:hidden;"><span>${h.emoji}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(h.name)}</span></div>${wdays
+            .map((d) => {
+              const allowed = habitAllowedOnDate(h, d);
+              const done =
+                allowed && (getDayPlan(d).habitsDone || []).includes(h.id);
+              return `<div style="width:24px;height:24px;border-radius:5px;background:${!allowed ? C.surface2 : done ? h.color : h.color + "20"};display:flex;align-items:center;justify-content:center;">${done ? `<span style="font-size:10px;font-weight:900;color:#000;">✓</span>` : ""}</div>`;
+            })
+            .join(
+              "",
+            )}<div style="width:36px;font-size:10px;font-family:var(--mono);color:${h.color};text-align:center;">${Math.round(pct * 100)}%</div></div>`;
+        })
+        .join("")}`
     }
   </div>
   <div class="card">
@@ -640,13 +639,12 @@ function vMonthly() {
     <div class="cal-grid">${Array.from({ length: fWD })
       .map(() => "<div></div>")
       .join("")}${days
-      .map((date, i) => {
-        const pp = plans[i],
-          today = isToday(date),
-          isSel = sel && date.toDateString() === new Date(sel).toDateString();
-        return `<button class="cal-cell" onclick="calSel('${date.toISOString()}','${isSel}')"><div class="cal-num" style="${today ? `background:${C.accent};` : ""}${isSel && !today ? `border:1.5px solid ${C.accent};` : ""}"><span style="font-size:13px;font-weight:${today ? 700 : 400};color:${today ? "#000" : isSel ? C.accent : C.text};">${date.getDate()}</span></div>${pp.mood != null ? `<span style="font-size:9px;">${MOODS[pp.mood]?.emoji}</span>` : ""}${
-          pp.habitsDone.length > 0
-            ? `<div style="display:flex;gap:1px;">${Array.from({
+        .map((date, i) => {
+          const pp = plans[i],
+            today = isToday(date),
+            isSel = sel && date.toDateString() === new Date(sel).toDateString();
+          return `<button class="cal-cell" onclick="calSel('${date.toISOString()}','${isSel}')"><div class="cal-num" style="${today ? `background:${C.accent};` : ""}${isSel && !today ? `border:1.5px solid ${C.accent};` : ""}"><span style="font-size:13px;font-weight:${today ? 700 : 400};color:${today ? "#000" : isSel ? C.accent : C.text};">${date.getDate()}</span></div>${pp.mood != null ? `<span style="font-size:9px;">${MOODS[pp.mood]?.emoji}</span>` : ""}${pp.habitsDone.length > 0
+              ? `<div style="display:flex;gap:1px;">${Array.from({
                 length: Math.min(pp.habitsDone.length, 3),
               })
                 .map(
@@ -654,32 +652,30 @@ function vMonthly() {
                     `<div style="width:4px;height:4px;border-radius:99px;background:${C.accent};"></div>`,
                 )
                 .join("")}</div>`
-            : ""
-        }</button>`;
-      })
-      .join("")}</div>
-  </div>
-  ${
-    sel
-      ? `<div class="card" style="border-color:${C.accent}40;">${(() => {
-          const sp = getDayPlan(new Date(sel)),
-            si = (sp.moneyEntries || [])
-              .filter((e) => e.type === "income")
-              .reduce((a, e) => a + e.amount, 0),
-            se = (sp.moneyEntries || [])
-              .filter((e) => e.type === "expense")
-              .reduce((a, e) => a + e.amount, 0);
-          return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span class="slabel" style="margin-bottom:0;">${fmt(sel, { weekday: "long", month: "long", day: "numeric" })}</span><button class="today-pill" onclick="jumpToDate('${dk(new Date(sel))}')">View →</button></div>${sp.mood != null ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Mood:</span><span>${MOODS[sp.mood]?.emoji} ${MOODS[sp.mood]?.label}</span></div>` : ""} ${sp.steps ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Steps:</span> <span style="font-family:var(--mono);color:${C.blue};">👟${sp.steps.toLocaleString()}</span></div>` : ""} ${
-            sp.habitsDone.length > 0
-              ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Habits:</span> ${S.habits
-                  .filter((h) => sp.habitsDone.includes(h.id))
-                  .map((h) => `<span>${h.emoji}</span>`)
-                  .join("")}</div>`
               : ""
+            }</button>`;
+        })
+        .join("")}</div>
+  </div>
+  ${sel
+      ? `<div class="card" style="border-color:${C.accent}40;">${(() => {
+        const sp = getDayPlan(new Date(sel)),
+          si = (sp.moneyEntries || [])
+            .filter((e) => e.type === "income")
+            .reduce((a, e) => a + e.amount, 0),
+          se = (sp.moneyEntries || [])
+            .filter((e) => e.type === "expense")
+            .reduce((a, e) => a + e.amount, 0);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span class="slabel" style="margin-bottom:0;">${fmt(sel, { weekday: "long", month: "long", day: "numeric" })}</span><button class="today-pill" onclick="jumpToDate('${dk(new Date(sel))}')">View →</button></div>${sp.mood != null ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Mood:</span><span>${MOODS[sp.mood]?.emoji} ${MOODS[sp.mood]?.label}</span></div>` : ""} ${sp.steps ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Steps:</span> <span style="font-family:var(--mono);color:${C.blue};">👟${sp.steps.toLocaleString()}</span></div>` : ""} ${sp.habitsDone.length > 0
+            ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Habits:</span> ${S.habits
+              .filter((h) => sp.habitsDone.includes(h.id))
+              .map((h) => `<span>${h.emoji}</span>`)
+              .join("")}</div>`
+            : ""
           } ${(sp.todos || []).filter((t) => t.isDone).length > 0 ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Tasks done:</span> <span style="color:${C.blue};">${(sp.todos || []).filter((t) => t.isDone).length}</span></div>` : ""} ${sp.notes ? `<div style="font-size:13px;color:${C.muted};margin-top:4px;">${esc(sp.notes.slice(0, 150))}</div>` : ""} ${si > 0 || se > 0 ? `<div style="display:flex;gap:12px;margin-top:8px;">${si > 0 ? `<span style="font-size:12px;font-family:var(--mono);color:${C.green};">+₹${si.toFixed(0)}</span>` : ""}${se > 0 ? `<span style="font-size:12px;font-family:var(--mono);color:${C.red};">-₹${se.toFixed(0)}</span>` : ""}</div>` : ""}`;
-        })()}</div>`
+      })()}</div>`
       : `<div class="card" style="display:flex;align-items:center;justify-content:center;min-height:200px;"><div style="text-align:center;color:${C.muted};font-size:13px;font-family:var(--mono);">Tap a day<br>to see details</div></div>`
-  }
+    }
 </div>
 
 <!-- Habit completion + Finance side by side -->
@@ -821,15 +817,27 @@ function vAnnual() {
   </div>
 
   <div class="card card-solo">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><span class="slabel" style="margin-bottom:0;">Mood Heatmap</span><div style="display:flex;gap:5px;">${MOODS.map((m) => `<span style="font-size:11px;">${m.emoji}</span>`).join("")}</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><span class="slabel" style="margin-bottom:0;">Mood Heatmap</span>
+    
+        
+        
+      <div style="display:flex;gap:5px;">${MOODS.map(
+        (m) => `<div style="display:flex;align-items:center;gap:4px;">
+          <div style="width:8px;height:8px;border-radius:99px;background:${m.color};"></div>
+          <span style="font-size:8px;font-family:var(--mono);color:${C.muted};">${m.label}</span>
+        </div>`,
+      ).join("")}
+      
+      </div></div>
     <div class="annual-hm">${heatWeeks
       .map(
         (week) =>
           `<div class="annual-col">${week
             .map((day) => {
               const pp = getDayPlan(day),
-                mc = moodColor(pp);
-              return `<div class="ahm-cell" style="background:${mc || C.muted + "18"};"></div>`;
+                mc = moodColor(pp),
+                isTdy = isToday(day);
+              return `<div class="ahm-cell" style="background:${mc || C.muted + "18"};${isTdy ? `outline:1.5px solid ${C.green};outline-offset:1px;` : ""}"></div>`;
             })
             .join("")}</div>`,
       )
@@ -837,15 +845,15 @@ function vAnnual() {
   </div>
 
 <div class="card card-solo"><span class="slabel">Month-by-Month</span><div class="ann-months">${monthData
-    .map((m, mi) => {
-      const isCurrent = mi === new Date().getMonth() && y === thisYear;
-      const mAvgMood =
-        m.moodDays.length > 0
-          ? m.moodDays.reduce((s, p) => s + p.mood, 0) / m.moodDays.length
-          : null;
-      return `<div class="ann-month-card" style="${isCurrent ? `border-color:${C.accent}40;` : ""}"><div class="ann-month-name" style="${isCurrent ? `color:${C.accent};` : ""}">${m.name}</div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.blue};">👟</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.steps / maxSteps) * 100}%;background:${C.blue};"></div></div><span class="ann-bar-val" style="color:${C.blue};">${m.steps >= 1000 ? Math.round(m.steps / 1000) + "k" : m.steps}</span></div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.accent};">🔥</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.habits / maxHabits) * 100}%;background:${C.accent};"></div></div><span class="ann-bar-val" style="color:${C.accent};">${m.habits}</span></div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.red};">💸</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.expense / maxExpense) * 100}%;background:${C.red};"></div></div><span class="ann-bar-val" style="color:${C.red};">₹${Math.round(m.expense)}</span></div>${mAvgMood != null ? `<div style="text-align:center;margin-top:6px;font-size:16px;">${MOODS[Math.round(mAvgMood)]?.emoji || ""}</div>` : '<div style="margin-top:10px;height:20px;"></div>'}</div>`;
-    })
-    .join("")}</div></div>
+      .map((m, mi) => {
+        const isCurrent = mi === new Date().getMonth() && y === thisYear;
+        const mAvgMood =
+          m.moodDays.length > 0
+            ? m.moodDays.reduce((s, p) => s + p.mood, 0) / m.moodDays.length
+            : null;
+        return `<div class="ann-month-card" style="${isCurrent ? `border-color:${C.accent}40;` : ""}"><div class="ann-month-name" style="${isCurrent ? `color:${C.accent};` : ""}">${m.name}</div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.blue};">👟</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.steps / maxSteps) * 100}%;background:${C.blue};"></div></div><span class="ann-bar-val" style="color:${C.blue};">${m.steps >= 1000 ? Math.round(m.steps / 1000) + "k" : m.steps}</span></div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.accent};">🔥</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.habits / maxHabits) * 100}%;background:${C.accent};"></div></div><span class="ann-bar-val" style="color:${C.accent};">${m.habits}</span></div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.red};">💸</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.expense / maxExpense) * 100}%;background:${C.red};"></div></div><span class="ann-bar-val" style="color:${C.red};">₹${Math.round(m.expense)}</span></div>${mAvgMood != null ? `<div style="text-align:center;margin-top:6px;font-size:16px;">${MOODS[Math.round(mAvgMood)]?.emoji || ""}</div>` : '<div style="margin-top:10px;height:20px;"></div>'}</div>`;
+      })
+      .join("")}</div></div>
 
 <!-- Habit performance + Mood distribution side by side -->
 <div class="card-pair">
@@ -856,14 +864,14 @@ function vAnnual() {
   </div>
   <div class="card">
     <span class="slabel">Mood Distribution</span>
-    <div style="display:flex;gap:8px;align-items:flex-end;height:70px;">${MOODS.map(
-      (mood) => {
-        const cnt = allPlans.filter((p) => p.mood === mood.id).length,
-          h =
-            moodDays.length > 0 ? Math.max((cnt / moodDays.length) * 70, 2) : 2;
-        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end;"><div style="font-size:9px;font-family:var(--mono);color:${C.muted};">${cnt}</div><div style="width:100%;height:${h}px;background:${mood.color};border-radius:3px 3px 0 0;"></div><div style="font-size:16px;">${mood.emoji}</div></div>`;
-      },
-    ).join("")}</div>
+    <div style="display:flex;gap:8px;align-items:flex-end;height:100px;">${MOODS.map(
+        (mood) => {
+          const cnt = allPlans.filter((p) => p.mood === mood.id).length,
+            h =
+              moodDays.length > 0 ? Math.max((cnt / moodDays.length) * 70, 2) : 2;
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end;"><div style="font-size:9px;font-family:var(--mono);color:${C.muted};">${cnt}</div><div style="width:100%;height:${h}px;background:${mood.color};border-radius:3px 3px 0 0;"></div><div style="font-size:16px;">${mood.emoji}</div></div>`;
+        },
+      ).join("")}</div>
   </div>
 </div>
 
@@ -879,7 +887,7 @@ function vInsights() {
   const habRate =
     S.habits.length > 0
       ? p30.reduce((s, p) => s + p.habitsDone.length, 0) /
-        (S.habits.length * 30)
+      (S.habits.length * 30)
       : 0;
   const allT = p30.reduce((s, p) => s + (p.todos || []).length, 0),
     doneT = p30.reduce(
@@ -1035,10 +1043,10 @@ ${insights.map((ins) => `<div class="ins-card" style="border:1px solid ${iC[ins.
 
     <div style="display:flex;align-items:flex-end;gap:3px;height:60px;">
       ${moodHist
-        .map((m) => {
-          const safe = Number.isInteger(m) && m >= 0 && m < MOODS.length;
+      .map((m) => {
+        const safe = Number.isInteger(m) && m >= 0 && m < MOODS.length;
 
-          return `
+        return `
         <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;">
           <div style="
             background:${safe ? MOODS[m].color : C.muted + "20"};
@@ -1046,8 +1054,8 @@ ${insights.map((ins) => `<div class="ins-card" style="border:1px solid ${iC[ins.
             height:${safe ? `${(m + 1) * 12}px` : "4px"};
           "></div>
         </div>`;
-        })
-        .join("")}
+      })
+      .join("")}
     </div>
 
     <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
