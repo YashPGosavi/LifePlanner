@@ -1,9 +1,6 @@
-const C = {
-  bg: "#0e0e10",
-  surface: "#1a1a1f",
-  surface2: "#222228",
-  surface3: "#2c2c36",
-  border: "#2a2a32",
+// C is a Proxy — theme-sensitive keys read live CSS variables so light/dark
+// mode works without any hardcoded colour strings in the view templates.
+const _Cstatic = {
   accent: "#C8F135",
   blue: "#35C8F1",
   yellow: "#F1C135",
@@ -12,17 +9,82 @@ const C = {
   pink: "#FF6B9D",
   purple: "#C835F1",
   orange: "#F18C35",
-  text: "#f0f0f0",
-  muted: "#666680",
 };
+const _CcssMap = {
+  bg:       "--bg",
+  surface:  "--surface",
+  surface2: "--surface2",
+  surface3: "--surface3",
+  border:   "--border",
+  text:     "--text",
+  muted:    "--muted",
+};
+const C = new Proxy(_Cstatic, {
+  get(target, key) {
+    if (_CcssMap[key]) {
+      return getComputedStyle(document.documentElement)
+        .getPropertyValue(_CcssMap[key]).trim();
+    }
+    return target[key];
+  }
+});
+// SVG icons for tabs — cleaner, theme-aware, no emoji rendering inconsistency
+const SVG_ICONS = {
+  daily:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
+  habits:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+  weekly:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="7" y="14" width="3" height="3" rx="0.5" fill="currentColor" stroke="none"/><rect x="11" y="14" width="3" height="3" rx="0.5" fill="currentColor" stroke="none"/></svg>`,
+  monthly:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="8" y1="19" x2="12" y2="19"/></svg>`,
+  annual:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>`,
+  insights: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/><line x1="12" y1="16" x2="12" y2="18" stroke-width="2"/></svg>`,
+  profile:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+};
+
+const MOOD_SVG = {
+  awful: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="9"/>
+  <line x1="9" y1="10" x2="9" y2="10"/>
+  <line x1="15" y1="10" x2="15" y2="10"/>
+  <path d="M8 16c1.5-2 6.5-2 8 0"/>
+  </svg>`,
+
+  bad: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="9"/>
+  <line x1="9" y1="10" x2="9" y2="10"/>
+  <line x1="15" y1="10" x2="15" y2="10"/>
+  <line x1="9" y1="16" x2="15" y2="16"/>
+  </svg>`,
+
+  okay: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="9"/>
+  <line x1="9" y1="10" x2="9" y2="10"/>
+  <line x1="15" y1="10" x2="15" y2="10"/>
+  <line x1="8" y1="15" x2="16" y2="15"/>
+  </svg>`,
+
+  good: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="9"/>
+  <line x1="9" y1="10" x2="9" y2="10"/>
+  <line x1="15" y1="10" x2="15" y2="10"/>
+  <path d="M8 15c2 2 6 2 8 0"/>
+  </svg>`,
+
+  great: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="9"/>
+  <circle cx="9" cy="10" r="1"/>
+  <circle cx="15" cy="10" r="1"/>
+  <path d="M8 14c2.5 3 5.5 3 8 0"/>
+  </svg>`
+};
+
+
 const TABS = [
-  { id: "daily", label: "Today", icon: "☀️" },
-  { id: "habits", label: "Habits", icon: "🔥" },
-  { id: "weekly", label: "Week", icon: "📆" },
-  { id: "monthly", label: "Month", icon: "🗓" },
-  { id: "annual", label: "Annual", icon: "📊" },
-  { id: "insights", label: "Insights", icon: "💡" },
-  { id: "profile", label: "Profile", icon: "👤" },
+  { id: "daily",    label: "Today",    icon: SVG_ICONS.daily },
+  { id: "habits",   label: "Habits",   icon: SVG_ICONS.habits },
+  { id: "weekly",   label: "Week",     icon: SVG_ICONS.weekly },
+  { id: "monthly",  label: "Month",    icon: SVG_ICONS.monthly },
+  { id: "annual",   label: "Annual",   icon: SVG_ICONS.annual },
+  { id: "insights", label: "Insights", icon: SVG_ICONS.insights },
+  { id: "profile",  label: "Profile",  icon: SVG_ICONS.profile },
 ];
 const MOODS = [
   { id: 0, emoji: "😭", label: "Awful", color: "#EF4444" },
@@ -88,6 +150,7 @@ const S = {
   _mType: "expense",
   _hForm: { emoji: "✨", color: C.accent, frequency: "Daily" },
   density: lsGet("lp_density") || "comfortable",
+  theme: lsGet("lp_theme") || "system", // "system" | "light" | "dark"
 };
 
 const planCache = {};
@@ -95,6 +158,78 @@ const savePlans = () => lsSet("lp_dayPlans", S.dayPlans);
 const saveHabits = () => lsSet("lp_habits", S.habits);
 const saveProfile = () => lsSet("lp_profile", S.profile);
 const saveDensity = () => lsSet("lp_density", S.density);
+const saveTheme = () => lsSet("lp_theme", S.theme);
+
+function applyTheme() {
+  const root = document.documentElement;
+  if (S.theme === "light") {
+    root.setAttribute("data-theme", "light");
+  } else if (S.theme === "dark") {
+    root.setAttribute("data-theme", "dark");
+  } else {
+    // system: remove attribute, let CSS media query decide
+    root.removeAttribute("data-theme");
+  }
+}
+
+function updateFavicon() {
+  // Determine effective theme (system resolves via media query)
+  let effective = S.theme;
+  if (effective === "system") {
+    effective = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  const suffix = effective === "light" ? "-light" : "-dark";
+
+  // Update <link rel="icon">
+  let link = document.querySelector('link[rel="icon"]');
+  if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+  link.href = `appIcon${suffix}.png`;
+  link.type = "image/png";
+
+  // Update apple-touch-icon
+  let apple = document.querySelector('link[rel="apple-touch-icon"]');
+  if (apple) apple.href = `appIcon${suffix}.png`;
+}
+
+function cycleTheme() {
+  const order = ["system", "light", "dark"];
+  S.theme = order[(order.indexOf(S.theme) + 1) % order.length];
+
+  saveTheme();
+  applyTheme();
+  updateFavicon();
+
+  const btn = document.getElementById("themeToggle");
+  if (btn) btn.innerHTML = themeIcon();
+}
+const THEME_ICONS = {
+  light: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <circle cx="12" cy="12" r="4"/>
+    <line x1="12" y1="2" x2="12" y2="5"/>
+    <line x1="12" y1="19" x2="12" y2="22"/>
+    <line x1="2" y1="12" x2="5" y2="12"/>
+    <line x1="19" y1="12" x2="22" y2="12"/>
+    <line x1="4.5" y1="4.5" x2="6.5" y2="6.5"/>
+    <line x1="17.5" y1="17.5" x2="19.5" y2="19.5"/>
+    <line x1="4.5" y1="19.5" x2="6.5" y2="17.5"/>
+    <line x1="17.5" y1="6.5" x2="19.5" y2="4.5"/>
+  </svg>`,
+
+  dark: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>
+  </svg>`,
+
+  system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <rect x="3" y="4" width="18" height="14" rx="2"/>
+    <line x1="8" y1="20" x2="16" y2="20"/>
+  </svg>`
+};
+
+function themeIcon() {
+  if (S.theme === "light") return THEME_ICONS.light;
+  if (S.theme === "dark") return THEME_ICONS.dark;
+  return THEME_ICONS.system;
+}
 const getDayPlan = (d) => {
   const k = dk(d);
   if (planCache[k]) return planCache[k];
@@ -157,6 +292,7 @@ function fmtTime(t24) {
 }
 
 function render() {
+  applyTheme();
   if (!S.profile) {
     renderOnboard();
     return;
@@ -170,9 +306,14 @@ function render() {
   } else {
     hf.style.display = "none";
   }
+  // Theme toggle button
+  const themeBtn = document.getElementById("themeToggle");
+  if (themeBtn) themeBtn.innerHTML = themeIcon();
+
   document.getElementById("tabs").innerHTML = TABS.map(
     (t) => `<button class="tab-btn${S.tab === t.id ? " active" : ""}" onclick="switchTab('${t.id}')"><span class="ti">${t.icon}</span><span class="tl">${t.label}</span></button>`,
   ).join("");
+  updateFavicon();
   renderContent();
 }
 function switchTab(id) {
@@ -1106,6 +1247,8 @@ function setVH() {
   document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`);
 }
 setVH();
+applyTheme(); // Apply saved theme immediately to avoid flash
+updateFavicon(); // Set correct favicon before first paint
 
 let resizeTimeout;
 window.addEventListener("resize", () => {

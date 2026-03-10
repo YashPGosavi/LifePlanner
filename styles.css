@@ -18,12 +18,22 @@ html {
   overflow: hidden;
 }
 
+/* ══ THEME VARIABLES ══════════════════════════════════════════ */
+
+/* Dark theme (default) */
+/* ══ THEME VARIABLES ══════════════════════════════════════════ */
+
+/* Dark theme (default) */
 :root {
   --bg: #0e0e10;
   --surface: #1a1a1f;
   --surface2: #222228;
   --surface3: #2c2c36;
   --border: #2a2a32;
+  --text: #f0f0f0;
+  --muted: #666680;
+
+  /* Brand colours — identical in both themes */
   --accent: #c8f135;
   --blue: #35c8f1;
   --yellow: #f1c135;
@@ -32,19 +42,65 @@ html {
   --pink: #ff6b9d;
   --purple: #c835f1;
   --orange: #f18c35;
-  --text: #f0f0f0;
-  --muted: #666680;
+
   --safe-top: env(safe-area-inset-top);
   --safe-bot: env(safe-area-inset-bottom);
   --safe-left: env(safe-area-inset-left);
   --safe-right: env(safe-area-inset-right);
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   --nav-w: 230px;
   --mono: "DM Mono", monospace;
   --sans: "DM Sans", system-ui, sans-serif;
 }
 
-body {
-  /* safe-top handled by #header to avoid double padding */
+/* Light theme — set via data-theme="light" on <html> */
+[data-theme="light"] {
+  --bg: #f4f4f8;
+  --surface: #ffffff;
+  --surface2: #ebebf2;
+  --surface3: #e0e0ea;
+  --border: #d4d4e0;
+  --text: #111118;
+  --muted: #8888a8;
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* System light preference — only when no explicit data-theme is set */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f4f4f8;
+    --surface: #ffffff;
+    --surface2: #ebebf2;
+    --surface3: #e0e0ea;
+    --border: #d4d4e0;
+    --text: #111118;
+    --muted: #8888a8;
+    --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* Light theme overrides */
+[data-theme="light"] {
+  --bg: #f4f4f8;
+  --surface: #ffffff;
+  --surface2: #ebebf2;
+  --surface3: #e0e0ea;
+  --border: #d4d4e0;
+  --text: #111118;
+  --muted: #8888a8;
+}
+
+/* System preference — applied when no explicit data-theme is set */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f4f4f8;
+    --surface: #ffffff;
+    --surface2: #ebebf2;
+    --surface3: #e0e0ea;
+    --border: #d4d4e0;
+    --text: #111118;
+    --muted: #8888a8;
+  }
 }
 
 html,
@@ -55,8 +111,8 @@ body {
   font-family: var(--sans);
   overflow: hidden;
   overscroll-behavior: none;
-  /* Perf: promote to GPU layer */
   -webkit-font-smoothing: antialiased;
+  transition: background 0.25s ease, color 0.25s ease;
 }
 
 /* ── ZOOM FIX: inputs must be 16px+ to prevent mobile browser zoom ── */
@@ -116,7 +172,7 @@ input[type="number"] {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
+  background: var(--border);
   border-radius: 99px;
 }
 
@@ -132,7 +188,8 @@ input[type="number"] {
 
 #header {
   padding: calc(10px + var(--safe-top)) 16px 10px 16px;
-  background: rgba(14, 14, 16, 0.95);
+  background: var(--bg); /* fallback */
+  background: color-mix(in srgb, var(--bg) 95%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
@@ -209,7 +266,21 @@ input[type="number"] {
 }
 
 .tab-btn .ti {
-  font-size: 18px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.tab-btn .ti svg {
+  width: 22px;
+  height: 22px;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+.tab-btn.active .ti svg {
+  color: var(--accent);
 }
 
 .tab-btn .tl {
@@ -277,7 +348,7 @@ input[type="number"] {
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--card-shadow);
   /* Prevent content overflow */
   overflow: hidden;
   /* Perf */
@@ -487,7 +558,7 @@ button {
   align-items: center;
   gap: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(42, 42, 50, 0.5);
+  border-bottom: 1px solid var(--border);
 }
 
 .sched-item:last-child {
@@ -536,7 +607,7 @@ button {
   align-items: center;
   gap: 10px;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(42, 42, 50, 0.5);
+  border-bottom: 1px solid var(--border);
 }
 
 .cl-item:last-child {
@@ -547,7 +618,7 @@ button {
   width: 28px;
   height: 28px;
   border-radius: 7px;
-  border: 1.5px solid rgba(102, 102, 128, 0.4);
+  border: 1.5px solid var(--border);
   background: none;
   cursor: pointer;
   display: flex;
@@ -767,7 +838,7 @@ button {
 .ann-bar-track {
   flex: 1;
   height: 5px;
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--surface3);
   border-radius: 99px;
   overflow: hidden;
 }
@@ -834,11 +905,24 @@ button {
   align-items: flex-start;
   gap: 8px;
   padding: 7px 0;
-  border-bottom: 1px solid rgba(42, 42, 50, 0.4);
+  border-bottom: 1px solid var(--border);
 }
 
 .money-row:last-child {
   border-bottom: none;
+}
+
+.theme-toggle svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
 }
 
 /* ── Insights ── */
@@ -883,7 +967,7 @@ button {
   justify-content: space-between;
   align-items: center;
   padding: 11px 0;
-  border-bottom: 1px solid rgba(42, 42, 50, 0.4);
+  border-bottom: 1px solid var(--border);
   gap: 8px;
 }
 
@@ -973,7 +1057,7 @@ button {
 #onboard {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, var(--bg), #1a1a2e);
+  background: linear-gradient(135deg, var(--bg), var(--surface3));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1098,6 +1182,44 @@ button {
   padding: 10px 0;
 }
 
+
+
+/* ══ THEME TOGGLE ══════════════════════════════════════════ */
+.theme-toggle {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.theme-toggle:active {
+  transform: scale(0.92);
+}
+
+/* Smooth transitions on theme-sensitive elements */
+.card, .hb-card, #header, .modal-sheet, .tab-btn,
+input, textarea, select, .stat-tile, .wk-col,
+.ann-month-card, .ins-card, .sched-badge {
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+/* Light theme: header needs lighter blur bg */
+[data-theme="light"] #header {
+  background: rgba(244, 244, 248, 0.95);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) #header {
+    background: rgba(244, 244, 248, 0.95);
+  }
+}
+
 /* ═══════════════════════════════
    RESPONSIVE — Tablet (768px+)
 ═══════════════════════════════ */
@@ -1163,8 +1285,13 @@ button {
   }
 
   .tab-btn .ti {
-    font-size: 20px;
+    width: 24px;
+    height: 24px;
     flex-shrink: 0;
+  }
+  .tab-btn .ti svg {
+    width: 24px;
+    height: 24px;
   }
 
   .tab-btn .tl {
@@ -1261,4 +1388,12 @@ button {
     grid-template-columns: 1fr 1fr;
     gap: 14px;
   }
+}
+
+/* Tell browser which app icon to use based on theme */
+@media (prefers-color-scheme: dark) {
+  link[rel="icon"] { content: url(appIcon-dark.png); }
+}
+@media (prefers-color-scheme: light) {
+  link[rel="icon"] { content: url(appIcon-light.png); }
 }

@@ -18,20 +18,53 @@
     />
     <meta name="apple-mobile-web-app-title" content="Life Planner" />
 
-    <!-- Theme color -->
-    <meta name="theme-color" content="#0e0e10" />
+    <!-- Theme color — swapped dynamically by JS on every theme change -->
+    <meta name="theme-color" id="themeColorMeta" content="#0e0e10" />
 
     <title>Life Planner</title>
 
-    <!-- App icon -->
-    <link rel="apple-touch-icon" href="appIcon.png"/>
-    <link rel="apple-touch-icon" sizes="180x180" href="appIcon.png" />
-    <link rel="icon" href="appIcon.png" type="image/png" />
+    <!-- Favicon — JS swaps between favicon-dark.png / favicon-light.png -->
+    <link rel="icon" id="faviconLink" href="appIcon-dark.png" type="image/png" sizes="32x32" />
 
-    <!-- Manifest (for installable web app) -->
+    <!-- Passive system-preference hints (browsers that support media on <link>) -->
+    <link rel="icon" href="appIcon-dark.png"  type="image/png" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="appIcon-light.png" type="image/png" media="(prefers-color-scheme: light)" />
+
+    <!-- iOS apple-touch-icon — JS swaps between appIcon-dark.png / appIcon-light.png.
+         iOS ignores manifest.json icons entirely — only these <link> tags work. -->
+    <link rel="apple-touch-icon" id="touchIcon"    href="appIcon-dark.png" />
+    <link rel="apple-touch-icon" id="touchIcon180" href="appIcon-dark.png" sizes="180x180" />
+
+    <!-- Windows tile -->
+    <meta name="msapplication-TileColor" content="#0e0e10" />
+    <meta name="msapplication-TileImage" content="appIcon-dark.png" />
+
+    <!-- Manifest (Android PWA install) -->
     <link rel="manifest" href="manifest.json" />
 
     <link rel="stylesheet" href="styles.css" />
+
+    <!-- ⚡ Inline theme bootstrap — runs before <body> to prevent flash of wrong theme -->
+    <script>
+      (function () {
+        var saved = null;
+        try { saved = JSON.parse(localStorage.getItem("lp_theme")); } catch (e) {}
+        var theme = saved || "system";
+        var effective = theme === "system"
+          ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+          : theme;
+
+        document.documentElement.setAttribute("data-theme", effective);
+
+        if (effective === "light") {
+          document.getElementById("themeColorMeta").content = "#f4f4f8";
+          document.getElementById("faviconLink").href        = "appIcon-light.png";
+          document.getElementById("touchIcon").href          = "appIcon-light.png";
+          document.getElementById("touchIcon180").href       = "appIcon-light.png";
+        }
+        // dark is already the default — no DOM changes needed
+      })();
+    </script>
   </head>
 
   <body>
@@ -44,6 +77,7 @@
             <button class="jump-btn" onclick="openJumpDate()">
               📅 Go to date
             </button>
+            <button class="theme-toggle" id="themeToggle" onclick="cycleTheme()" title="Toggle theme"></button>
             <div class="hd-date" id="hdDate"></div>
           </div>
         </div>
