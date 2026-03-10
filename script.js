@@ -39,55 +39,14 @@ const WEATHERS = [
   { id: 4, emoji: "❄️", label: "Snowy" },
 ];
 const HABIT_EMOJIS = [
-  "✨",
-  "🏃",
-  "📚",
-  "💧",
-  "🧘",
-  "💪",
-  "🎯",
-  "🌱",
-  "✍️",
-  "🍎",
-  "😴",
-  "🎨",
-  "🎵",
-  "💊",
-  "🚶",
-  "🔥",
-  "🥗",
-  "💻",
-  "🏋️",
-  "🧹",
-  "🎾",
-  "🚴",
+  "✨","🏃","📚","💧","🧘","💪","🎯","🌱","✍️","🍎","😴","🎨","🎵","💊","🚶","🔥","🥗","💻","🏋️","🧹","🎾","🚴",
 ];
 const HABIT_COLORS = [
-  "#C8F135",
-  "#35C8F1",
-  "#F1C135",
-  "#F14C35",
-  "#35F18C",
-  "#C835F1",
-  "#F18C35",
-  "#FF6B9D",
+  "#C8F135","#35C8F1","#F1C135","#F14C35","#35F18C","#C835F1","#F18C35","#FF6B9D",
 ];
 const FREQ = ["Daily", "Weekdays", "Weekends"];
 const STEPS_GOAL = 10000;
-const MONTHS_S = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
+const MONTHS_S = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 const lsGet = (k) => {
   try {
@@ -138,13 +97,10 @@ const saveProfile = () => lsSet("lp_profile", S.profile);
 const saveDensity = () => lsSet("lp_density", S.density);
 const getDayPlan = (d) => {
   const k = dk(d);
-
   if (planCache[k]) return planCache[k];
-
   const p = S.dayPlans[k]
     ? { ...emptyPlan(d), ...S.dayPlans[k] }
     : emptyPlan(d);
-
   planCache[k] = p;
   return p;
 };
@@ -168,13 +124,8 @@ function addDays(date, n) {
   return d;
 }
 function isToday(date) {
-  const t = new Date(),
-    d = new Date(date);
-  return (
-    t.getFullYear() === d.getFullYear() &&
-    t.getMonth() === d.getMonth() &&
-    t.getDate() === d.getDate()
-  );
+  const t = new Date(), d = new Date(date);
+  return t.getFullYear() === d.getFullYear() && t.getMonth() === d.getMonth() && t.getDate() === d.getDate();
 }
 function startOfWeek(date) {
   const d = new Date(date);
@@ -194,6 +145,7 @@ function esc(s) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
+
 function fmtTime(t24) {
   try {
     const [h, m] = t24.split(":");
@@ -209,11 +161,7 @@ function render() {
     renderOnboard();
     return;
   }
-  const ds = fmt(new Date(), {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
+  const ds = fmt(new Date(), { weekday: "short", month: "short", day: "numeric" });
   document.getElementById("hdDate").textContent = ds;
   const hf = document.getElementById("header-footer");
   if (window.innerWidth >= 768) {
@@ -223,8 +171,7 @@ function render() {
     hf.style.display = "none";
   }
   document.getElementById("tabs").innerHTML = TABS.map(
-    (t) =>
-      `<button class="tab-btn${S.tab === t.id ? " active" : ""}" onclick="switchTab('${t.id}')"><span class="ti">${t.icon}</span><span class="tl">${t.label}</span></button>`,
+    (t) => `<button class="tab-btn${S.tab === t.id ? " active" : ""}" onclick="switchTab('${t.id}')"><span class="ti">${t.icon}</span><span class="tl">${t.label}</span></button>`,
   ).join("");
   renderContent();
 }
@@ -251,9 +198,7 @@ function renderContent() {
 
 /* ── Helpers ── */
 function ring(progress, color, size, center) {
-  const r = (size - 10) / 2,
-    c = 2 * Math.PI * r,
-    dash = c * Math.min(progress, 1);
+  const r = (size - 10) / 2, c = 2 * Math.PI * r, dash = c * Math.min(progress, 1);
   return `<div style="position:relative;width:${size}px;height:${size}px;flex-shrink:0;"><svg width="${size}" height="${size}" style="transform:rotate(-90deg)"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${color}26" stroke-width="8"/><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${color}" stroke-width="8" stroke-dasharray="${dash} ${c}" stroke-linecap="round"/></svg><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">${center || ""}</div></div>`;
 }
 function pbar(p, color, h) {
@@ -268,34 +213,21 @@ function statTile(title, value, color, icon) {
    DAILY VIEW
 ══════════════════════════════════ */
 function vDaily() {
-  const d = S.selDate,
-    p = getDayPlan(d);
+  const d = S.selDate, p = getDayPlan(d);
   const tmr = new Date();
   tmr.setHours(23, 59, 59, 999);
-  const isT = isToday(d),
-    canFwd = d < tmr;
+  const isT = isToday(d), canFwd = d < tmr;
   const todaysHabits = S.habits.filter((h) => habitAllowedOnDate(h, d));
-
-  const habDone = (p.habitsDone || []).filter((id) =>
-    todaysHabits.some((h) => h.id === id),
-  );
-
+  const habDone = (p.habitsDone || []).filter((id) => todaysHabits.some((h) => h.id === id));
   const habPct = todaysHabits.length ? habDone.length / todaysHabits.length : 0;
-  const todos = p.todos || [],
-    doneTodos = todos.filter((i) => i.isDone).length;
+  const todos = p.todos || [], doneTodos = todos.filter((i) => i.isDone).length;
   const schedItems = p.scheduleItems || [];
 
   const schedHTML =
     schedItems.length === 0
       ? `<div style="font-size:12px;font-family:var(--mono);color:${C.muted};text-align:center;padding:10px 0;">No events — tap + to add</div>`
-      : schedItems
-          .map(
-            (item, i) =>
-              `<div class="sched-item"><div class="sched-badge">${esc(item.time)}</div><div class="sched-text">${esc(item.text)}</div><button class="sched-del" onclick="deleteSchedItem(${i})">✕</button></div>`,
-          )
-          .join("");
+      : schedItems.map((item, i) => `<div class="sched-item"><div class="sched-badge">${esc(item.time)}</div><div class="sched-text">${esc(item.text)}</div><button class="sched-del" onclick="deleteSchedItem(${i})">✕</button></div>`).join("");
 
-  // Money summary
   const entries = p.moneyEntries || [];
   const inc = sumMoney(p, "income");
   const exp = sumMoney(p, "expense");
@@ -318,7 +250,7 @@ function vDaily() {
   ${!isT ? `<div style="margin-top:10px;padding:8px 12px;background:${C.accent}12;border:1px solid ${C.accent}28;border-radius:10px;font-size:12px;color:${C.accent};font-family:var(--mono);text-align:center;">📅 Viewing ${fmt(d, { weekday: "short", month: "short", day: "numeric" })}</div>` : ""}
 </div>
 
-<!-- Mood + Weather side by side on large screens -->
+<!-- Mood + Weather -->
 <div class="card-pair">
   <div class="card">
     <span class="slabel">Mood</span>
@@ -330,7 +262,7 @@ function vDaily() {
   </div>
 </div>
 
-<!-- Schedule + To-Do side by side -->
+<!-- Schedule + To-Do -->
 <div class="card-pair">
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -347,11 +279,11 @@ function vDaily() {
     </div>
     ${todos.length > 0 && doneTodos > 0 ? `<div style="margin-bottom:10px;">${pbar(doneTodos / todos.length, C.accent)}</div>` : ""}
     ${todos.length === 0 ? `<div style="font-size:12px;font-family:var(--mono);color:${C.muted};text-align:center;padding:8px 0;">Tap + to add tasks</div>` : ""}
-    ${(todos || []).map((it) => `<div class="cl-item"><button class="cl-check" onclick="toggleCL('todos','${it.id}')" style="${it.isDone ? `background:${C.accent};border-color:${C.accent};color:#000;` : `border-color:${C.accent}40;`}">${it.isDone ? "✓" : ""}</button><span style="flex:1;font-size:14px;${it.isDone ? `color:${C.muted};text-decoration:line-through;` : ""}">${esc(it.text)}</span><button class="icon-btn" onclick="deleteCL('todos','${it.id}')">✕</button></div>`).join("")}
+    ${(todos || []).map((it) => `<div class="cl-item"><button class="cl-check" onclick="toggleCL('todos','${it.id}')" style="${it.isDone ? `background:${C.accent};border-color:${C.accent};color:#000;` : `border-color:${C.accent}40;`}">${it.isDone ? "✓" : ""}</button><span style="flex:1;font-size:14px;min-width:0;word-break:break-word;overflow-wrap:break-word;white-space:normal;${it.isDone ? `color:${C.muted};text-decoration:line-through;` : ""}">${esc(it.text)}</span><button class="icon-btn" onclick="deleteCL('todos','${it.id}')">✕</button></div>`).join("")}
   </div>
 </div>
 
-<!-- Habits Today + Steps side by side -->
+<!-- Habits Today + Steps -->
 <div class="card-pair">
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -363,7 +295,7 @@ function vDaily() {
       .filter((h) => habitAllowedOnDate(h, d))
       .map((h) => {
         const done = habDone.includes(h.id);
-        return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(42,42,50,.4);"><button onclick="toggleHabitDay('${h.id}')" style="width:24px;height:24px;border-radius:8px;border:1.5px solid ${done ? h.color : h.color + "40"};background:${done ? h.color : "none"};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#000;flex-shrink:0;transition:all .2s;">${done ? "✓" : ""}</button><span style="font-size:16px;">${h.emoji}</span><span style="flex:1;font-size:14px;">${esc(h.name)}</span><span style="background:${h.color}20;border-radius:99px;padding:3px 9px;font-size:12px;font-weight:700;font-family:var(--mono);color:${h.color};">🔥${h.currentStreak || 0}d</span></div>`;
+        return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(42,42,50,.4);min-width:0;overflow:hidden;"><button onclick="toggleHabitDay('${h.id}')" style="width:24px;height:24px;border-radius:8px;border:1.5px solid ${done ? h.color : h.color + "40"};background:${done ? h.color : "none"};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#000;flex-shrink:0;transition:all .2s;">${done ? "✓" : ""}</button><span style="font-size:16px;flex-shrink:0;">${h.emoji}</span><span style="flex:1;font-size:14px;word-break:break-word;overflow-wrap:break-word;white-space:normal;">${esc(h.name)}</span><span style="background:${h.color}20;border-radius:99px;padding:3px 9px;font-size:12px;font-weight:700;font-family:var(--mono);color:${h.color};flex-shrink:0;">🔥${h.currentStreak || 0}d</span></div>`;
       })
       .join("")}
   </div>
@@ -379,7 +311,7 @@ function vDaily() {
   </div>
 </div>
 
-<!-- Water + Exercise side by side -->
+<!-- Water + Exercise -->
 <div class="card-pair">
   <div class="card">
     <span class="slabel">Water · ${p.waterGlasses || 0}/8</span>
@@ -392,7 +324,7 @@ function vDaily() {
   </div>
 </div>
 
-<!-- Money full width -->
+<!-- Money -->
 <div class="card card-solo">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
     <span class="slabel" style="margin-bottom:0;">💰 Money</span>
@@ -404,16 +336,13 @@ function vDaily() {
       ["OUT", `₹${exp.toFixed(2)}`, C.red],
       ["NET", `₹${net.toFixed(2)}`, net >= 0 ? C.green : C.red],
     ]
-      .map(
-        ([l, v, col]) =>
-          `<div style="text-align:center;background:${col}12;border:1px solid ${col}30;border-radius:10px;padding:10px 8px;"><div style="font-size:9px;font-family:var(--mono);color:${C.muted};">${l}</div><div style="font-size:14px;font-weight:700;color:${col};font-family:var(--mono);">${v}</div></div>`,
-      )
+      .map(([l, v, col]) => `<div style="text-align:center;background:${col}12;border:1px solid ${col}30;border-radius:10px;padding:10px 8px;"><div style="font-size:9px;font-family:var(--mono);color:${C.muted};">${l}</div><div style="font-size:14px;font-weight:700;color:${col};font-family:var(--mono);">${v}</div></div>`)
       .join("")}
   </div>
-  ${entries.map((e) => `<div class="money-row"><div style="width:8px;height:8px;border-radius:99px;background:${e.type === "income" ? C.green : C.red};flex-shrink:0;"></div><span style="flex:1;font-size:13px;">${esc(e.description)}</span>${e.category ? `<span style="font-size:10px;font-family:var(--mono);color:${C.muted};">${esc(e.category)}</span>` : ""}<span style="font-size:14px;font-weight:700;font-family:var(--mono);color:${e.type === "income" ? C.green : C.red};">${e.type === "income" ? "+" : "-"}₹${e.amount.toFixed(2)}</span><button class="icon-btn" onclick="deleteMoney('${e.id}')">✕</button></div>`).join("")}
+  ${entries.map((e) => `<div class="money-row"><div style="width:8px;height:8px;border-radius:99px;background:${e.type === "income" ? C.green : C.red};flex-shrink:0;"></div><span style="flex:1;font-size:13px;word-break:break-word;overflow-wrap:break-word;white-space:normal;">${esc(e.description)}</span>${e.category ? `<span style="font-size:10px;font-family:var(--mono);color:${C.muted};flex-shrink:0;">${esc(e.category)}</span>` : ""}<span style="font-size:14px;font-weight:700;font-family:var(--mono);color:${e.type === "income" ? C.green : C.red};flex-shrink:0;">${e.type === "income" ? "+" : "-"}₹${e.amount.toFixed(2)}</span><button class="icon-btn" onclick="deleteMoney('${e.id}')">✕</button></div>`).join("")}
 </div>
 
-<!-- Notes full width -->
+<!-- Notes -->
 <div class="card card-solo">
   <span class="slabel">Notes</span>
   <textarea placeholder="Thoughts, reflections…" style="min-height:90px;" oninput="saveNote(this.value)">${esc(p.notes || "")}</textarea>
@@ -424,12 +353,9 @@ function vDaily() {
    HABITS VIEW
 ══════════════════════════════════ */
 function vHabits() {
-  const today = new Date(),
-    p = getDayPlan(today),
+  const today = new Date(), p = getDayPlan(today),
     todaysHabits = S.habits.filter((h) => habitAllowedOnDate(h, today)),
-    habDone = (p.habitsDone || []).filter((id) =>
-      todaysHabits.some((h) => h.id === id),
-    );
+    habDone = (p.habitsDone || []).filter((id) => todaysHabits.some((h) => h.id === id));
 
   const habPct = todaysHabits.length ? habDone.length / todaysHabits.length : 0;
   const l30 = Array.from({ length: 30 }, (_, i) => addDays(today, -29 + i));
@@ -446,16 +372,16 @@ function vHabits() {
       const pct30 = allowedDays ? count30 / allowedDays : 0;
       return `<div class="hb-card" style="${isDoneToday ? `border-color:${h.color}50;` : ""}">
   <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
-    <div class="hb-emoji-wrap" style="background:${h.color}18;">${h.emoji}</div>
-    <div style="flex:1;">
-      <div style="font-size:16px;font-weight:600;">${esc(h.name)}</div>
+    <div class="hb-emoji-wrap" style="background:${h.color}18;flex-shrink:0;">${h.emoji}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:16px;font-weight:600;word-break:break-word;overflow-wrap:break-word;white-space:normal;">${esc(h.name)}</div>
       <div style="font-size:11px;font-family:var(--mono);color:${C.muted};margin-top:2px;">${h.frequency}</div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
         <button onclick="toggleHabitDay('${h.id}')" style="padding:6px 14px;border-radius:9px;border:1.5px solid ${isDoneToday ? h.color : h.color + "40"};background:${isDoneToday ? h.color : "none"};cursor:pointer;font-size:13px;font-weight:700;color:${isDoneToday ? "#000" : h.color};transition:all .2s;">${isDoneToday ? "✓ Done" : "Mark Done"}</button>
         <span class="hb-streak" style="background:${h.color}20;color:${h.color};">🔥 ${h.currentStreak || 0}d</span>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;">
       ${ring(pct30, h.color, 54, `<div style="text-align:center;line-height:1.2;"><div style="font-size:10px;font-weight:700;color:${C.text};">${Math.round(pct30 * 100)}%</div><div style="font-size:8px;color:${C.muted};font-family:var(--mono);">30d</div></div>`)}
       <div style="display:flex;gap:6px;">
         <button class="icon-btn" style="font-size:16px;" onclick="openHabitModal('${h.id}')">✎</button>
@@ -490,37 +416,25 @@ ${S.habits.length === 0 ? `<div class="card card-solo" style="text-align:center;
    WEEKLY VIEW
 ══════════════════════════════════ */
 function vWeekly() {
-  const offset = S.wkOffset,
-    refDay = addDays(new Date(), offset * 7),
-    sow = startOfWeek(refDay);
-  const wdays = Array.from({ length: 7 }, (_, i) => addDays(sow, i)),
-    canFwd = offset < 0;
+  const offset = S.wkOffset, refDay = addDays(new Date(), offset * 7), sow = startOfWeek(refDay);
+  const wdays = Array.from({ length: 7 }, (_, i) => addDays(sow, i)), canFwd = offset < 0;
   const weekPlans = wdays.map((d) => getDayPlan(d));
-  let totalAllowed = 0;
-  let totalDone = 0;
+  let totalAllowed = 0, totalDone = 0;
 
   S.habits.forEach((h) => {
     wdays.forEach((d) => {
       if (habitAllowedOnDate(h, d)) {
         totalAllowed++;
-        if ((getDayPlan(d).habitsDone || []).includes(h.id)) {
-          totalDone++;
-        }
+        if ((getDayPlan(d).habitsDone || []).includes(h.id)) totalDone++;
       }
     });
   });
 
   const habRate = totalAllowed ? totalDone / totalAllowed : 0;
   const moodDays = weekPlans.filter((p) => p.mood != null);
-  const avgMood =
-    moodDays.length > 0
-      ? moodDays.reduce((s, p) => s + p.mood, 0) / moodDays.length
-      : null;
+  const avgMood = moodDays.length > 0 ? moodDays.reduce((s, p) => s + p.mood, 0) / moodDays.length : null;
   const weekSpend = weekPlans.reduce((s, p) => s + sumMoney(p, "expense"), 0);
-  const tasksDone = weekPlans.reduce(
-    (s, p) => s + (p.todos || []).filter((t) => t.isDone).length,
-    0,
-  );
+  const tasksDone = weekPlans.reduce((s, p) => s + (p.todos || []).filter((t) => t.isDone).length, 0);
   const totalSteps = weekPlans.reduce((s, p) => s + (p.steps || 0), 0);
 
   return `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
@@ -542,10 +456,7 @@ function vWeekly() {
 <div class="wk-cols card-solo" style="margin-bottom:14px;">
   ${wdays
     .map((date) => {
-      const pp = getDayPlan(date),
-        today = isToday(date),
-        sv = pp.steps || 0,
-        sok = sv >= STEPS_GOAL * 0.5;
+      const pp = getDayPlan(date), today = isToday(date), sv = pp.steps || 0, sok = sv >= STEPS_GOAL * 0.5;
       return `<div class="wk-col" style="${today ? `border-color:${C.accent};background:linear-gradient(135deg,${C.surface},${C.accent}08);` : ""}" onclick="jumpToDate('${dk(date)}')">
     <div style="font-size:9px;font-family:var(--mono);color:${today ? C.accent : C.muted};font-weight:600;">${fmt(date, { weekday: "short" }).toUpperCase()}</div>
     <div style="font-size:22px;font-weight:700;color:${today ? C.accent : C.text};">${new Date(date).getDate()}</div>
@@ -560,7 +471,7 @@ function vWeekly() {
     .join("")}
 </div>
 
-<!-- Habit Matrix + Week Summary side by side -->
+<!-- Habit Matrix + Week Summary -->
 <div class="card-pair">
   <div class="card">
     <span class="slabel">Habit Matrix</span>
@@ -568,32 +479,22 @@ function vWeekly() {
       S.habits.length === 0
         ? `<div style="font-size:12px;font-family:var(--mono);color:${C.muted};">No habits to show</div>`
         : `
-    <div style="display:flex;align-items:center;gap:4px;margin-bottom:10px;">
-      <div style="flex:1;font-size:9px;font-family:var(--mono);color:${C.muted};">HABIT</div>
-      ${wdays.map((d) => `<div style="width:24px;text-align:center;font-size:9px;font-family:var(--mono);color:${isToday(d) ? C.accent : C.muted};">${fmt(d, { weekday: "narrow" })}</div>`).join("")}
-      <div style="width:36px;font-size:9px;font-family:var(--mono);color:${C.muted};text-align:center;">%</div>
+    <div style="display:grid;grid-template-columns:1fr repeat(7,24px) 36px;align-items:center;gap:4px;margin-bottom:10px;">
+      <div style="font-size:9px;font-family:var(--mono);color:${C.muted};">HABIT</div>
+      ${wdays.map((d) => `<div style="text-align:center;font-size:9px;font-family:var(--mono);color:${isToday(d) ? C.accent : C.muted};">${fmt(d, { weekday: "narrow" })}</div>`).join("")}
+      <div style="font-size:9px;font-family:var(--mono);color:${C.muted};text-align:center;">%</div>
     </div>
-    ${S.habits
-      .map((h) => {
+    ${S.habits.map((h) => {
         const allowedDays = wdays.filter((d) => habitAllowedOnDate(h, d));
-        const doneDays = allowedDays.filter((d) =>
-          (getDayPlan(d).habitsDone || []).includes(h.id),
-        );
-
+        const doneDays = allowedDays.filter((d) => (getDayPlan(d).habitsDone || []).includes(h.id));
         const cnt = doneDays.length;
         const pct = allowedDays.length > 0 ? cnt / allowedDays.length : 0;
-        return `<div class="hm-row"><div style="flex:1;font-size:12px;display:flex;align-items:center;gap:5px;overflow:hidden;"><span>${h.emoji}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(h.name)}</span></div>${wdays
-          .map((d) => {
-            const allowed = habitAllowedOnDate(h, d);
-            const done =
-              allowed && (getDayPlan(d).habitsDone || []).includes(h.id);
-            return `<div style="width:20px;height:20px;border-radius:5px;background:${!allowed ? C.surface2 : done ? h.color : h.color + "20"};display:flex;align-items:center;justify-content:center;">${done ? `<span style="font-size:10px;font-weight:900;color:#000;">✓</span>` : ""}</div>`;
-          })
-          .join(
-            "",
-          )}<div style="width:36px;font-size:10px;font-family:var(--mono);color:${h.color};text-align:center;">${Math.round(pct * 100)}%</div></div>`;
-      })
-      .join("")}`
+        return `<div style="display:grid;grid-template-columns:1fr repeat(7,24px) 36px;align-items:center;gap:4px;margin-bottom:6px;"><div style="flex:1;font-size:12px;display:flex;align-items:center;gap:5px;overflow:hidden;min-width:0;"><span style="flex-shrink:0;">${h.emoji}</span><span style="word-break:break-word;overflow-wrap:break-word;white-space:normal;">${esc(h.name)}</span></div>${wdays.map((d) => {
+          const allowed = habitAllowedOnDate(h, d);
+          const done = allowed && (getDayPlan(d).habitsDone || []).includes(h.id);
+          return `<div style="width:20px;height:20px;border-radius:5px;background:${!allowed ? C.surface2 : done ? h.color : h.color + "20"};display:flex;align-items:center;justify-content:center;">${done ? `<span style="font-size:10px;font-weight:900;color:#000;">✓</span>` : ""}</div>`;
+        }).join("")}<div style="width:36px;font-size:10px;font-family:var(--mono);color:${h.color};text-align:center;">${Math.round(pct * 100)}%</div></div>`;
+      }).join("")}`
     }
   </div>
   <div class="card">
@@ -610,15 +511,10 @@ function vWeekly() {
    MONTHLY VIEW
 ══════════════════════════════════ */
 function vMonthly() {
-  const mo = S.moOffset,
-    target = new Date();
+  const mo = S.moOffset, target = new Date();
   target.setMonth(target.getMonth() + mo, 1);
-  const y = target.getFullYear(),
-    m = target.getMonth(),
-    dIM = new Date(y, m + 1, 0).getDate(),
-    fWD = new Date(y, m, 1).getDay();
-  const days = Array.from({ length: dIM }, (_, i) => new Date(y, m, i + 1)),
-    plans = days.map((d) => getDayPlan(d));
+  const y = target.getFullYear(), m = target.getMonth(), dIM = new Date(y, m + 1, 0).getDate(), fWD = new Date(y, m, 1).getDay();
+  const days = Array.from({ length: dIM }, (_, i) => new Date(y, m, i + 1)), plans = days.map((d) => getDayPlan(d));
   const income = plans.reduce((s, p) => s + sumMoney(p, "income"), 0);
   const expense = plans.reduce((s, p) => s + sumMoney(p, "expense"), 0);
   const habDone = plans.reduce((s, p) => s + p.habitsDone.length, 0);
@@ -632,73 +528,36 @@ function vMonthly() {
 </div>
 <div class="sg4">${statTile("Income", `₹${income.toFixed(0)}`, C.green, "💰")}${statTile("Expenses", `₹${expense.toFixed(0)}`, C.red, "💸")}${statTile("Habits", String(habDone), C.accent, "🔥")}${statTile("Steps", totalSteps >= 1000 ? Math.round(totalSteps / 1000) + "k" : String(totalSteps), C.blue, "👟")}</div>
 
-<!-- Calendar + Day detail side by side -->
+<!-- Calendar + Day detail -->
 <div class="card-pair">
   <div class="card">
     <span class="slabel">Calendar</span>
     <div class="cal-grid" style="margin-bottom:8px;">${["S", "M", "T", "W", "T", "F", "S"].map((d) => `<div class="cal-dlbl">${d}</div>`).join("")}</div>
-    <div class="cal-grid">${Array.from({ length: fWD })
-      .map(() => "<div></div>")
-      .join("")}${days
-      .map((date, i) => {
-        const pp = plans[i],
-          today = isToday(date),
-          isSel = sel && date.toDateString() === new Date(sel).toDateString();
-        return `<button class="cal-cell" onclick="calSel('${date.toISOString()}','${isSel}')"><div class="cal-num" style="${today ? `background:${C.accent};` : ""}${isSel && !today ? `border:1.5px solid ${C.accent};` : ""}"><span style="font-size:13px;font-weight:${today ? 700 : 400};color:${today ? "#000" : isSel ? C.accent : C.text};">${date.getDate()}</span></div>${pp.mood != null ? `<span style="font-size:9px;">${MOODS[pp.mood]?.emoji}</span>` : ""}${
-          pp.habitsDone.length > 0
-            ? `<div style="display:flex;gap:1px;">${Array.from({
-                length: Math.min(pp.habitsDone.length, 3),
-              })
-                .map(
-                  () =>
-                    `<div style="width:4px;height:4px;border-radius:99px;background:${C.accent};"></div>`,
-                )
-                .join("")}</div>`
-            : ""
-        }</button>`;
-      })
-      .join("")}</div>
+    <div class="cal-grid">${Array.from({ length: fWD }).map(() => "<div></div>").join("")}${days.map((date, i) => {
+      const pp = plans[i], today = isToday(date), isSel = sel && date.toDateString() === new Date(sel).toDateString();
+      return `<button class="cal-cell" onclick="calSel('${date.toISOString()}','${isSel}')"><div class="cal-num" style="${today ? `background:${C.accent};` : ""}${isSel && !today ? `border:1.5px solid ${C.accent};` : ""}"><span style="font-size:13px;font-weight:${today ? 700 : 400};color:${today ? "#000" : isSel ? C.accent : C.text};">${date.getDate()}</span></div>${pp.mood != null ? `<span style="font-size:9px;">${MOODS[pp.mood]?.emoji}</span>` : ""}${pp.habitsDone.length > 0 ? `<div style="display:flex;gap:1px;">${Array.from({ length: Math.min(pp.habitsDone.length, 3) }).map(() => `<div style="width:4px;height:4px;border-radius:99px;background:${C.accent};"></div>`).join("")}</div>` : ""}</button>`;
+    }).join("")}</div>
   </div>
-  ${
-    sel
-      ? `<div class="card" style="border-color:${C.accent}40;">${(() => {
-          const sp = getDayPlan(new Date(sel)),
-            si = (sp.moneyEntries || [])
-              .filter((e) => e.type === "income")
-              .reduce((a, e) => a + e.amount, 0),
-            se = (sp.moneyEntries || [])
-              .filter((e) => e.type === "expense")
-              .reduce((a, e) => a + e.amount, 0);
-          return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span class="slabel" style="margin-bottom:0;">${fmt(sel, { weekday: "long", month: "long", day: "numeric" })}</span><button class="today-pill" onclick="jumpToDate('${dk(new Date(sel))}')">View →</button></div>${sp.mood != null ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Mood:</span><span>${MOODS[sp.mood]?.emoji} ${MOODS[sp.mood]?.label}</span></div>` : ""} ${sp.steps ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Steps:</span> <span style="font-family:var(--mono);color:${C.blue};">👟${sp.steps.toLocaleString()}</span></div>` : ""} ${
-            sp.habitsDone.length > 0
-              ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Habits:</span> ${S.habits
-                  .filter((h) => sp.habitsDone.includes(h.id))
-                  .map((h) => `<span>${h.emoji}</span>`)
-                  .join("")}</div>`
-              : ""
-          } ${(sp.todos || []).filter((t) => t.isDone).length > 0 ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Tasks done:</span> <span style="color:${C.blue};">${(sp.todos || []).filter((t) => t.isDone).length}</span></div>` : ""} ${sp.notes ? `<div style="font-size:13px;color:${C.muted};margin-top:4px;">${esc(sp.notes.slice(0, 150))}</div>` : ""} ${si > 0 || se > 0 ? `<div style="display:flex;gap:12px;margin-top:8px;">${si > 0 ? `<span style="font-size:12px;font-family:var(--mono);color:${C.green};">+₹${si.toFixed(0)}</span>` : ""}${se > 0 ? `<span style="font-size:12px;font-family:var(--mono);color:${C.red};">-₹${se.toFixed(0)}</span>` : ""}</div>` : ""}`;
-        })()}</div>`
-      : `<div class="card" style="display:flex;align-items:center;justify-content:center;min-height:200px;"><div style="text-align:center;color:${C.muted};font-size:13px;font-family:var(--mono);">Tap a day<br>to see details</div></div>`
+  ${sel
+    ? `<div class="card" style="border-color:${C.accent}40;">${(() => {
+        const sp = getDayPlan(new Date(sel)), si = (sp.moneyEntries || []).filter((e) => e.type === "income").reduce((a, e) => a + e.amount, 0), se = (sp.moneyEntries || []).filter((e) => e.type === "expense").reduce((a, e) => a + e.amount, 0);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><span class="slabel" style="margin-bottom:0;">${fmt(sel, { weekday: "long", month: "long", day: "numeric" })}</span><button class="today-pill" onclick="jumpToDate('${dk(new Date(sel))}')">View →</button></div>${sp.mood != null ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Mood:</span><span>${MOODS[sp.mood]?.emoji} ${MOODS[sp.mood]?.label}</span></div>` : ""} ${sp.steps ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Steps:</span> <span style="font-family:var(--mono);color:${C.blue};">👟${sp.steps.toLocaleString()}</span></div>` : ""} ${sp.habitsDone.length > 0 ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Habits:</span> ${S.habits.filter((h) => sp.habitsDone.includes(h.id)).map((h) => `<span>${h.emoji}</span>`).join("")}</div>` : ""} ${(sp.todos || []).filter((t) => t.isDone).length > 0 ? `<div style="margin-bottom:6px;"><span style="font-size:11px;font-family:var(--mono);color:${C.muted};">Tasks done:</span> <span style="color:${C.blue};">${(sp.todos || []).filter((t) => t.isDone).length}</span></div>` : ""} ${sp.notes ? `<div style="font-size:13px;color:${C.muted};margin-top:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${esc(sp.notes.slice(0, 150))}</div>` : ""} ${si > 0 || se > 0 ? `<div style="display:flex;gap:12px;margin-top:8px;">${si > 0 ? `<span style="font-size:12px;font-family:var(--mono);color:${C.green};">+₹${si.toFixed(0)}</span>` : ""}${se > 0 ? `<span style="font-size:12px;font-family:var(--mono);color:${C.red};">-₹${se.toFixed(0)}</span>` : ""}</div>` : ""}`;
+      })()}</div>`
+    : `<div class="card" style="display:flex;align-items:center;justify-content:center;min-height:200px;"><div style="text-align:center;color:${C.muted};font-size:13px;font-family:var(--mono);">Tap a day<br>to see details</div></div>`
   }
 </div>
 
-<!-- Habit completion + Finance side by side -->
+<!-- Habit completion + Finance -->
 <div class="card-pair">
   <div class="card">
     <span class="slabel">Habit Completion</span>
     ${S.habits.length === 0 ? `<div style="font-size:12px;font-family:var(--mono);color:${C.muted};">No habits</div>` : ""}
-    ${S.habits
-      .map((h) => {
-        const allowedDays = days.filter((d) => habitAllowedOnDate(h, d));
-
-        const done = allowedDays.filter((d) =>
-          (getDayPlan(d).habitsDone || []).includes(h.id),
-        ).length;
-
-        const pp = allowedDays.length ? done / allowedDays.length : 0;
-        return `<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:13px;">${h.emoji} ${esc(h.name)}</span><span style="font-size:11px;font-family:var(--mono);color:${h.color};">${done}/${allowedDays.length}</span></div>${pbar(pp, h.color)}</div>`;
-      })
-      .join("")}
+    ${S.habits.map((h) => {
+      const allowedDays = days.filter((d) => habitAllowedOnDate(h, d));
+      const done = allowedDays.filter((d) => (getDayPlan(d).habitsDone || []).includes(h.id)).length;
+      const pp = allowedDays.length ? done / allowedDays.length : 0;
+      return `<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;min-width:0;"><span style="font-size:13px;flex:1;min-width:0;word-break:break-word;overflow-wrap:break-word;white-space:normal;">${h.emoji} ${esc(h.name)}</span><span style="font-size:11px;font-family:var(--mono);color:${h.color};flex-shrink:0;">${done}/${allowedDays.length}</span></div>${pbar(pp, h.color)}</div>`;
+    }).join("")}
   </div>
   <div class="card">
     <span class="slabel">Finance</span>
@@ -715,10 +574,8 @@ function vMonthly() {
    ANNUAL VIEW
 ══════════════════════════════════ */
 function vAnnual() {
-  const y = S.annYear,
-    thisYear = new Date().getFullYear();
-  const ys = new Date(y, 0, 1),
-    ye = y === thisYear ? new Date() : new Date(y, 11, 31);
+  const y = S.annYear, thisYear = new Date().getFullYear();
+  const ys = new Date(y, 0, 1), ye = y === thisYear ? new Date() : new Date(y, 11, 31);
   const totalDays = Math.floor((ye - ys) / 864e5) + 1;
   const allDays = Array.from({ length: totalDays }, (_, i) => addDays(ys, i)),
     allPlans = allDays.map((d) => S.dayPlans[dk(d)] || emptyPlan(d));
@@ -728,32 +585,18 @@ function vAnnual() {
   const daysLogged = allPlans.filter((p) => S.dayPlans[p.id]).length;
   const habitsCompleted = allPlans.reduce((s, p) => s + p.habitsDone.length, 0);
   const moodDays = allPlans.filter((p) => p.mood != null);
-  const avgMood =
-    moodDays.length > 0
-      ? moodDays.reduce((s, p) => s + p.mood, 0) / moodDays.length
-      : null;
-  const bestStreakH = S.habits.reduce(
-    (b, h) =>
-      (h.longestStreak || 0) > b.val
-        ? { name: h.name, val: h.longestStreak || 0 }
-        : b,
-    { name: "—", val: 0 },
-  );
+  const avgMood = moodDays.length > 0 ? moodDays.reduce((s, p) => s + p.mood, 0) / moodDays.length : null;
+  const bestStreakH = S.habits.reduce((b, h) => (h.longestStreak || 0) > b.val ? { name: h.name, val: h.longestStreak || 0 } : b, { name: "—", val: 0 });
   const heatDays = allDays;
   const heatWeeks = [];
-  for (let i = 0; i < heatDays.length; i += 7)
-    heatWeeks.push(heatDays.slice(i, i + 7));
+  for (let i = 0; i < heatDays.length; i += 7) heatWeeks.push(heatDays.slice(i, i + 7));
   const monthData = Array.from({ length: 12 }, (_, mi) => {
-    const mDays = Array.from(
-      { length: new Date(y, mi + 1, 0).getDate() },
-      (_, i) => new Date(y, mi, i + 1),
-    );
+    const mDays = Array.from({ length: new Date(y, mi + 1, 0).getDate() }, (_, i) => new Date(y, mi, i + 1));
     const mPlans = mDays.map((d) => getDayPlan(d));
     return {
       name: MONTHS_S[mi],
       steps: mPlans.reduce((s, p) => s + (p.steps || 0), 0),
       income: mPlans.reduce((s, p) => s + sumMoney(p, "income"), 0),
-
       expense: mPlans.reduce((s, p) => s + sumMoney(p, "expense"), 0),
       habits: mPlans.reduce((s, p) => s + p.habitsDone.length, 0),
       moodDays: mPlans.filter((p) => p.mood != null),
@@ -762,36 +605,22 @@ function vAnnual() {
   const maxSteps = Math.max(...monthData.map((m) => m.steps), 1),
     maxHabits = Math.max(...monthData.map((m) => m.habits), 1),
     maxExpense = Math.max(...monthData.map((m) => m.expense), 1);
-  const ranked = S.habits
-    .map((h) => {
-      const allowedDays = allDays.filter((d) => habitAllowedOnDate(h, d));
-
-      const done = allowedDays.filter((d) =>
-        (getDayPlan(d).habitsDone || []).includes(h.id),
-      ).length;
-
-      const pct = allowedDays.length ? done / allowedDays.length : 0;
-
-      return { h, done, pct };
-    })
-    .sort((a, b) => b.done - a.done);
+  const ranked = S.habits.map((h) => {
+    const allowedDays = allDays.filter((d) => habitAllowedOnDate(h, d));
+    const done = allowedDays.filter((d) => (getDayPlan(d).habitsDone || []).includes(h.id)).length;
+    const pct = allowedDays.length ? done / allowedDays.length : 0;
+    return { h, done, pct };
+  }).sort((a, b) => b.done - a.done);
 
   function actColor(plan) {
-    const intensity =
-      S.habits.length > 0 ? plan.habitsDone.length / S.habits.length : 0;
-    const hasAny =
-      plan.habitsDone.length > 0 ||
-      plan.mood != null ||
-      plan.steps > 0 ||
-      plan.notes;
+    const intensity = S.habits.length > 0 ? plan.habitsDone.length / S.habits.length : 0;
+    const hasAny = plan.habitsDone.length > 0 || plan.mood != null || plan.steps > 0 || plan.notes;
     if (!hasAny) return `${C.muted}18`;
     return `rgba(200,241,53,${0.2 + intensity * 0.8})`;
   }
   function moodColor(plan) {
     if (plan.mood === null || plan.mood === undefined) return null;
-    return (
-      ["#8B1A1A", "#8B4A1A", "#6B6A1A", "#2A6B3A", "#1A8B4A"][plan.mood] || null
-    );
+    return (["#8B1A1A", "#8B4A1A", "#6B6A1A", "#2A6B3A", "#1A8B4A"][plan.mood] || null);
   }
 
   return `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
@@ -802,80 +631,38 @@ function vAnnual() {
 <div class="sg4">${statTile("Days Logged", String(daysLogged), C.accent, "📅")}${statTile("Total Steps", totalSteps >= 1000 ? Math.round(totalSteps / 1000) + "k" : String(totalSteps), C.blue, "👟")}${statTile("Habits Done", String(habitsCompleted), C.green, "🔥")}${statTile("Net Money", `₹${Math.round(totalIncome - totalExpense)}`, totalIncome >= totalExpense ? C.green : C.red, "💰")}</div>
 <div class="sg2">${statTile("Avg Mood", avgMood != null ? `${MOODS[Math.round(avgMood)]?.emoji} ${(avgMood + 1).toFixed(1)}` : "—", C.yellow, "😊")}${statTile("Best Streak", `${bestStreakH.val}d`, C.orange, "🏆")}</div>
 
-<!-- Activity + Mood heatmaps side by side -->
-  <div class="card card-solo">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><span class="slabel" style="margin-bottom:0;">Activity Heatmap</span><div style="display:flex;gap:4px;align-items:center;"><span style="font-size:9px;font-family:var(--mono);color:${C.muted};">LESS</span>${[0.1, 0.3, 0.55, 0.75, 1].map((v) => `<div style="width:10px;height:10px;border-radius:2px;background:rgba(200,241,53,${v});"></div>`).join("")}<span style="font-size:9px;font-family:var(--mono);color:${C.muted};">MORE</span></div></div>
-    <div class="annual-hm">${heatWeeks
-      .map(
-        (week) =>
-          `<div class="annual-col">${week
-            .map((day) => {
-              const pp = getDayPlan(day),
-                bg = actColor(pp),
-                isTdy = isToday(day);
-              return `<div class="ahm-cell" style="background:${bg};${isTdy ? `outline:1.5px solid ${C.accent};outline-offset:1px;` : ""}"></div>`;
-            })
-            .join("")}</div>`,
-      )
-      .join("")}</div>
+<div class="card card-solo">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><span class="slabel" style="margin-bottom:0;">Activity Heatmap</span><div style="display:flex;gap:4px;align-items:center;"><span style="font-size:9px;font-family:var(--mono);color:${C.muted};">LESS</span>${[0.1, 0.3, 0.55, 0.75, 1].map((v) => `<div style="width:10px;height:10px;border-radius:2px;background:rgba(200,241,53,${v});"></div>`).join("")}<span style="font-size:9px;font-family:var(--mono);color:${C.muted};">MORE</span></div></div>
+  <div class="annual-hm">${heatWeeks.map((week) => `<div class="annual-col">${week.map((day) => { const pp = getDayPlan(day), bg = actColor(pp), isTdy = isToday(day); return `<div class="ahm-cell" style="background:${bg};${isTdy ? `outline:1.5px solid ${C.accent};outline-offset:1px;` : ""}"></div>`; }).join("")}</div>`).join("")}</div>
+</div>
+
+<div class="card card-solo">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><span class="slabel" style="margin-bottom:0;">Mood Heatmap</span>
+    <div style="display:flex;gap:5px;">${MOODS.map((m) => `<div style="display:flex;align-items:center;gap:4px;"><div style="width:8px;height:8px;border-radius:99px;background:${m.color};"></div><span style="font-size:8px;font-family:var(--mono);color:${C.muted};">${m.label}</span></div>`).join("")}</div>
   </div>
+  <div class="annual-hm">${heatWeeks.map((week) => `<div class="annual-col">${week.map((day) => { const pp = getDayPlan(day), mc = moodColor(pp), isTdy = isToday(day); return `<div class="ahm-cell" style="background:${mc || C.muted + "18"};${isTdy ? `outline:1.5px solid ${C.green};outline-offset:1px;` : ""}"></div>`; }).join("")}</div>`).join("")}</div>
+</div>
 
-  <div class="card card-solo">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><span class="slabel" style="margin-bottom:0;">Mood Heatmap</span>
-    
-        
-        
-      <div style="display:flex;gap:5px;">${MOODS.map(
-        (m) => `<div style="display:flex;align-items:center;gap:4px;">
-          <div style="width:8px;height:8px;border-radius:99px;background:${m.color};"></div>
-          <span style="font-size:8px;font-family:var(--mono);color:${C.muted};">${m.label}</span>
-        </div>`,
-      ).join("")}
-      
-      </div></div>
-    <div class="annual-hm">${heatWeeks
-      .map(
-        (week) =>
-          `<div class="annual-col">${week
-            .map((day) => {
-              const pp = getDayPlan(day),
-                mc = moodColor(pp),
-                isTdy = isToday(day);
-              return `<div class="ahm-cell" style="background:${mc || C.muted + "18"};${isTdy ? `outline:1.5px solid ${C.green};outline-offset:1px;` : ""}"></div>`;
-            })
-            .join("")}</div>`,
-      )
-      .join("")}</div>
-  </div>
+<div class="card card-solo"><span class="slabel">Month-by-Month</span><div class="ann-months">${monthData.map((m, mi) => {
+  const isCurrent = mi === new Date().getMonth() && y === thisYear;
+  const mAvgMood = m.moodDays.length > 0 ? m.moodDays.reduce((s, p) => s + p.mood, 0) / m.moodDays.length : null;
+  return `<div class="ann-month-card" style="${isCurrent ? `border-color:${C.accent}40;` : ""}"><div class="ann-month-name" style="${isCurrent ? `color:${C.accent};` : ""}">${m.name}</div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.blue};">👟</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.steps / maxSteps) * 100}%;background:${C.blue};"></div></div><span class="ann-bar-val" style="color:${C.blue};">${m.steps >= 1000 ? Math.round(m.steps / 1000) + "k" : m.steps}</span></div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.accent};">🔥</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.habits / maxHabits) * 100}%;background:${C.accent};"></div></div><span class="ann-bar-val" style="color:${C.accent};">${m.habits}</span></div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.red};">💸</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.expense / maxExpense) * 100}%;background:${C.red};"></div></div><span class="ann-bar-val" style="color:${C.red};">₹${Math.round(m.expense)}</span></div>${mAvgMood != null ? `<div style="text-align:center;margin-top:6px;font-size:16px;">${MOODS[Math.round(mAvgMood)]?.emoji || ""}</div>` : '<div style="margin-top:10px;height:20px;"></div>'}</div>`;
+}).join("")}</div></div>
 
-<div class="card card-solo"><span class="slabel">Month-by-Month</span><div class="ann-months">${monthData
-    .map((m, mi) => {
-      const isCurrent = mi === new Date().getMonth() && y === thisYear;
-      const mAvgMood =
-        m.moodDays.length > 0
-          ? m.moodDays.reduce((s, p) => s + p.mood, 0) / m.moodDays.length
-          : null;
-      return `<div class="ann-month-card" style="${isCurrent ? `border-color:${C.accent}40;` : ""}"><div class="ann-month-name" style="${isCurrent ? `color:${C.accent};` : ""}">${m.name}</div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.blue};">👟</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.steps / maxSteps) * 100}%;background:${C.blue};"></div></div><span class="ann-bar-val" style="color:${C.blue};">${m.steps >= 1000 ? Math.round(m.steps / 1000) + "k" : m.steps}</span></div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.accent};">🔥</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.habits / maxHabits) * 100}%;background:${C.accent};"></div></div><span class="ann-bar-val" style="color:${C.accent};">${m.habits}</span></div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.red};">💸</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.expense / maxExpense) * 100}%;background:${C.red};"></div></div><span class="ann-bar-val" style="color:${C.red};">₹${Math.round(m.expense)}</span></div>${mAvgMood != null ? `<div style="text-align:center;margin-top:6px;font-size:16px;">${MOODS[Math.round(mAvgMood)]?.emoji || ""}</div>` : '<div style="margin-top:10px;height:20px;"></div>'}</div>`;
-    })
-    .join("")}</div></div>
-
-<!-- Habit performance + Mood distribution side by side -->
+<!-- Habit performance + Mood distribution -->
 <div class="card-pair">
   <div class="card">
     <span class="slabel">Habit Performance — ${y}</span>
     ${ranked.length === 0 ? `<div style="font-size:12px;font-family:var(--mono);color:${C.muted};">No habits tracked</div>` : ""}
-    ${ranked.map(({ h, done, pct }, i) => `<div style="margin-bottom:12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:12px;font-family:var(--mono);color:${C.muted};width:20px;">#${i + 1}</span><span>${h.emoji}</span><span style="flex:1;font-size:13px;">${esc(h.name)}</span><span style="font-size:11px;font-family:var(--mono);color:${h.color};">${done}d · ${Math.round(pct * 100)}%</span></div>${pbar(pct, h.color)}</div>`).join("")}
+    ${ranked.map(({ h, done, pct }, i) => `<div style="margin-bottom:12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;min-width:0;"><span style="font-size:12px;font-family:var(--mono);color:${C.muted};width:20px;flex-shrink:0;">#${i + 1}</span><span style="flex-shrink:0;">${h.emoji}</span><span style="flex:1;font-size:13px;word-break:break-word;overflow-wrap:break-word;white-space:normal;">${esc(h.name)}</span><span style="font-size:11px;font-family:var(--mono);color:${h.color};flex-shrink:0;">${done}d · ${Math.round(pct * 100)}%</span></div>${pbar(pct, h.color)}</div>`).join("")}
   </div>
   <div class="card">
     <span class="slabel">Mood Distribution</span>
-    <div style="display:flex;gap:8px;align-items:flex-end;height:100px;">${MOODS.map(
-      (mood) => {
-        const cnt = allPlans.filter((p) => p.mood === mood.id).length,
-          h =
-            moodDays.length > 0 ? Math.max((cnt / moodDays.length) * 70, 2) : 2;
-        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end;"><div style="font-size:9px;font-family:var(--mono);color:${C.muted};">${cnt}</div><div style="width:100%;height:${h}px;background:${mood.color};border-radius:3px 3px 0 0;"></div><div style="font-size:16px;">${mood.emoji}</div></div>`;
-      },
-    ).join("")}</div>
+    <div style="display:flex;gap:8px;align-items:flex-end;height:100px;">${MOODS.map((mood) => {
+      const cnt = allPlans.filter((p) => p.mood === mood.id).length,
+        h = moodDays.length > 0 ? Math.max((cnt / moodDays.length) * 70, 2) : 2;
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end;"><div style="font-size:9px;font-family:var(--mono);color:${C.muted};">${cnt}</div><div style="width:100%;height:${h}px;background:${mood.color};border-radius:3px 3px 0 0;"></div><div style="font-size:16px;">${mood.emoji}</div></div>`;
+    }).join("")}</div>
   </div>
 </div>
 
@@ -886,18 +673,10 @@ function vAnnual() {
    INSIGHTS VIEW
 ══════════════════════════════════ */
 function vInsights() {
-  const l30 = Array.from({ length: 30 }, (_, i) => addDays(new Date(), -i)),
-    p30 = l30.map((d) => getDayPlan(d));
-  const habRate =
-    S.habits.length > 0
-      ? p30.reduce((s, p) => s + p.habitsDone.length, 0) /
-        (S.habits.length * 30)
-      : 0;
+  const l30 = Array.from({ length: 30 }, (_, i) => addDays(new Date(), -i)), p30 = l30.map((d) => getDayPlan(d));
+  const habRate = S.habits.length > 0 ? p30.reduce((s, p) => s + p.habitsDone.length, 0) / (S.habits.length * 30) : 0;
   const allT = p30.reduce((s, p) => s + (p.todos || []).length, 0),
-    doneT = p30.reduce(
-      (s, p) => s + (p.todos || []).filter((i) => i.isDone).length,
-      0,
-    );
+    doneT = p30.reduce((s, p) => s + (p.todos || []).filter((i) => i.isDone).length, 0);
   const taskRate = allT > 0 ? doneT / allT : 0,
     moodDays = p30.flatMap((p) => (p.mood != null ? [p.mood] : [])),
     moodRate = moodDays.length / 30;
@@ -906,178 +685,60 @@ function vInsights() {
     stepsGoalDays = p30.filter((p) => (p.steps || 0) >= STEPS_GOAL).length;
   const insights = [];
   if (S.habits.length > 0) {
-    if (habRate > 0.8)
-      insights.push({
-        title: "🏆 Excellent Habits!",
-        body: `${Math.round(habRate * 100)}% completion!`,
-        type: "success",
-        icon: "🏆",
-      });
-    else if (habRate > 0.5)
-      insights.push({
-        title: "📈 Good Habit Rate",
-        body: `${Math.round(habRate * 100)}% completion. Keep going!`,
-        type: "warning",
-        icon: "📈",
-      });
-    else
-      insights.push({
-        title: "⚠️ Habits Need Attention",
-        body: `Only ${Math.round(habRate * 100)}%.`,
-        type: "danger",
-        icon: "⚠️",
-      });
+    if (habRate > 0.8) insights.push({ title: "🏆 Excellent Habits!", body: `${Math.round(habRate * 100)}% completion!`, type: "success", icon: "🏆" });
+    else if (habRate > 0.5) insights.push({ title: "📈 Good Habit Rate", body: `${Math.round(habRate * 100)}% completion. Keep going!`, type: "warning", icon: "📈" });
+    else insights.push({ title: "⚠️ Habits Need Attention", body: `Only ${Math.round(habRate * 100)}%.`, type: "danger", icon: "⚠️" });
   }
-  if (stepsGoalDays > 20)
-    insights.push({
-      title: "🚶 Step Goal Crusher!",
-      body: `Hit ${STEPS_GOAL.toLocaleString()} on ${stepsGoalDays}/30 days!`,
-      type: "success",
-      icon: "👟",
-    });
-  else if (stepsGoalDays < 5 && totalSteps30 > 0)
-    insights.push({
-      title: "👟 Walk More",
-      body: `Only ${stepsGoalDays} days hitting step goal.`,
-      type: "warning",
-      icon: "🚶",
-    });
-  if (spend > 1000)
-    insights.push({
-      title: "💸 High Spending",
-      body: `₹${Math.round(spend)} in 30 days.`,
-      type: "danger",
-      icon: "💳",
-    });
-  else if (spend > 0)
-    insights.push({
-      title: "✅ Spending in Check",
-      body: `₹${Math.round(spend)} in 30 days.`,
-      type: "success",
-      icon: "✅",
-    });
+  if (stepsGoalDays > 20) insights.push({ title: "🚶 Step Goal Crusher!", body: `Hit ${STEPS_GOAL.toLocaleString()} on ${stepsGoalDays}/30 days!`, type: "success", icon: "👟" });
+  else if (stepsGoalDays < 5 && totalSteps30 > 0) insights.push({ title: "👟 Walk More", body: `Only ${stepsGoalDays} days hitting step goal.`, type: "warning", icon: "🚶" });
+  if (spend > 1000) insights.push({ title: "💸 High Spending", body: `₹${Math.round(spend)} in 30 days.`, type: "danger", icon: "💳" });
+  else if (spend > 0) insights.push({ title: "✅ Spending in Check", body: `₹${Math.round(spend)} in 30 days.`, type: "success", icon: "✅" });
   if (moodDays.length > 5) {
     const avg = moodDays.reduce((a, b) => a + b, 0) / moodDays.length;
-    if (avg >= 3)
-      insights.push({
-        title: `${MOODS[Math.round(avg)]?.emoji} Great Mood`,
-        body: `Average: ${MOODS[Math.round(avg)]?.label}`,
-        type: "success",
-        icon: "😊",
-      });
-    else if (avg < 2)
-      insights.push({
-        title: "😔 Low Mood",
-        body: "Consider exercise & sleep.",
-        type: "danger",
-        icon: "❤️",
-      });
+    if (avg >= 3) insights.push({ title: `${MOODS[Math.round(avg)]?.emoji} Great Mood`, body: `Average: ${MOODS[Math.round(avg)]?.label}`, type: "success", icon: "😊" });
+    else if (avg < 2) insights.push({ title: "😔 Low Mood", body: "Consider exercise & sleep.", type: "danger", icon: "❤️" });
   }
   const gw = p30.filter((p) => (p.waterGlasses || 0) >= 6).length;
-  if (gw > 20)
-    insights.push({
-      title: "💧 Great Hydration!",
-      body: `${gw}/30 days with 6+ glasses.`,
-      type: "success",
-      icon: "💧",
-    });
-  else if (gw < 10)
-    insights.push({
-      title: "💧 Drink More Water",
-      body: `Only ${gw} days with enough hydration.`,
-      type: "warning",
-      icon: "💧",
-    });
-  if (taskRate > 0.75)
-    insights.push({
-      title: "✅ High Productivity",
-      body: `${Math.round(taskRate * 100)}% of tasks done!`,
-      type: "success",
-      icon: "📋",
-    });
-  if (insights.length === 0)
-    insights.push({
-      title: "📊 Start Logging!",
-      body: "Insights appear as you log daily.",
-      type: "info",
-      icon: "📊",
-    });
-  const iC = {
-    success: C.green,
-    warning: C.yellow,
-    danger: C.red,
-    info: C.blue,
-  };
-  const moodHist = l30
-    .slice()
-    .reverse()
-    .map((d) => getDayPlan(d).mood);
-  const ranked = S.habits
-    .map((h) => {
-      const allowedDays = l30.filter((d) => habitAllowedOnDate(h, d));
-
-      const done = allowedDays.filter((d) =>
-        (getDayPlan(d).habitsDone || []).includes(h.id),
-      ).length;
-
-      const pct = allowedDays.length ? done / allowedDays.length : 0;
-
-      return { h, d: done, pct };
-    })
-    .sort((a, b) => b.d - a.d);
+  if (gw > 20) insights.push({ title: "💧 Great Hydration!", body: `${gw}/30 days with 6+ glasses.`, type: "success", icon: "💧" });
+  else if (gw < 10) insights.push({ title: "💧 Drink More Water", body: `Only ${gw} days with enough hydration.`, type: "warning", icon: "💧" });
+  if (taskRate > 0.75) insights.push({ title: "✅ High Productivity", body: `${Math.round(taskRate * 100)}% of tasks done!`, type: "success", icon: "📋" });
+  if (insights.length === 0) insights.push({ title: "📊 Start Logging!", body: "Insights appear as you log daily.", type: "info", icon: "📊" });
+  const iC = { success: C.green, warning: C.yellow, danger: C.red, info: C.blue };
+  const moodHist = l30.slice().reverse().map((d) => getDayPlan(d).mood);
+  const ranked = S.habits.map((h) => {
+    const allowedDays = l30.filter((d) => habitAllowedOnDate(h, d));
+    const done = allowedDays.filter((d) => (getDayPlan(d).habitsDone || []).includes(h.id)).length;
+    const pct = allowedDays.length ? done / allowedDays.length : 0;
+    return { h, d: done, pct };
+  }).sort((a, b) => b.d - a.d);
 
   return `<div class="card card-solo"><span class="slabel">30-Day Overview</span><div style="display:flex;justify-content:space-around;flex-wrap:wrap;gap:12px;">${[
     ["Habits", habRate, C.accent],
     ["Tasks", taskRate, C.blue],
     ["Logged", moodRate, C.yellow],
     ["Steps", stepsGoalDays / 30, C.green],
-  ]
-    .map(
-      ([l, p, col]) =>
-        `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;">${ring(p, col, 68, `<span style="font-size:13px;font-weight:700;color:${C.text};">${Math.round(p * 100)}%</span>`)}<span style="font-size:9px;font-family:var(--mono);color:${C.muted};">${l}</span></div>`,
-    )
-    .join("")}</div></div>
+  ].map(([l, p, col]) => `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;">${ring(p, col, 68, `<span style="font-size:13px;font-weight:700;color:${C.text};">${Math.round(p * 100)}%</span>`)}<span style="font-size:9px;font-family:var(--mono);color:${C.muted};">${l}</span></div>`).join("")}</div></div>
 <div class="sg2">${statTile("30d Steps", totalSteps30 >= 1000 ? Math.round(totalSteps30 / 1000) + "k" : String(totalSteps30), C.blue, "👟")}${statTile("Goal Days", `${stepsGoalDays}/30`, C.green, "🎯")}</div>
-${insights.map((ins) => `<div class="ins-card" style="border:1px solid ${iC[ins.type]}40;">${""}<div class="ins-icon-wrap" style="background:${iC[ins.type]}20;">${ins.icon}</div><div><div style="font-size:14px;font-weight:600;margin-bottom:4px;">${ins.title}</div><div style="font-size:12px;font-family:var(--mono);color:${C.muted};">${ins.body}</div></div></div>`).join("")}
+${insights.map((ins) => `<div class="ins-card" style="border:1px solid ${iC[ins.type]}40;"><div class="ins-icon-wrap" style="background:${iC[ins.type]}20;">${ins.icon}</div><div><div style="font-size:14px;font-weight:600;margin-bottom:4px;">${ins.title}</div><div style="font-size:12px;font-family:var(--mono);color:${C.muted};">${ins.body}</div></div></div>`).join("")}
 
-<!-- Mood chart + Habit leaderboard side by side -->
+<!-- Mood chart + Habit leaderboard -->
 <div class="card-pair">
   <div class="card">
     <span class="slabel">Mood — Last 30 Days</span>
-
     <div style="display:flex;align-items:flex-end;gap:3px;height:60px;">
-      ${moodHist
-        .map((m) => {
-          const safe = Number.isInteger(m) && m >= 0 && m < MOODS.length;
-
-          return `
-        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;">
-          <div style="
-            background:${safe ? MOODS[m].color : C.muted + "20"};
-            border-radius:3px;
-            height:${safe ? `${(m + 1) * 12}px` : "4px"};
-          "></div>
-        </div>`;
-        })
-        .join("")}
+      ${moodHist.map((m) => {
+        const safe = Number.isInteger(m) && m >= 0 && m < MOODS.length;
+        return `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;"><div style="background:${safe ? MOODS[m].color : C.muted + "20"};border-radius:3px;height:${safe ? `${(m + 1) * 12}px` : "4px"};"></div></div>`;
+      }).join("")}
     </div>
-
     <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
-      ${MOODS.map(
-        (m) => `
-        <div style="display:flex;align-items:center;gap:4px;">
-          <div style="width:8px;height:8px;border-radius:99px;background:${m.color};"></div>
-          <span style="font-size:8px;font-family:var(--mono);color:${C.muted};">${m.label}</span>
-        </div>
-      `,
-      ).join("")}
+      ${MOODS.map((m) => `<div style="display:flex;align-items:center;gap:4px;"><div style="width:8px;height:8px;border-radius:99px;background:${m.color};"></div><span style="font-size:8px;font-family:var(--mono);color:${C.muted};">${m.label}</span></div>`).join("")}
     </div>
   </div>
-
   <div class="card">
     <span class="slabel">Habit Leaderboard — 30 Days</span>
     ${ranked.length === 0 ? `<div style="font-size:12px;font-family:var(--mono);color:${C.muted};">No habits yet</div>` : ""}
-    ${ranked.map(({ h, d, pct }, i) => `<div style="margin-bottom:12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:12px;font-family:var(--mono);color:${C.muted};width:20px;">#${i + 1}</span><span>${h.emoji}</span><span style="flex:1;font-size:13px;">${esc(h.name)}</span><span style="font-size:11px;font-family:var(--mono);color:${h.color};">${d}/${l30.filter((d) => habitAllowedOnDate(h, d)).length}</span></div>${pbar(pct, h.color)}</div>`).join("")}
+    ${ranked.map(({ h, d, pct }, i) => `<div style="margin-bottom:12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;min-width:0;"><span style="font-size:12px;font-family:var(--mono);color:${C.muted};width:20px;flex-shrink:0;">#${i + 1}</span><span style="flex-shrink:0;">${h.emoji}</span><span style="flex:1;font-size:13px;word-break:break-word;overflow-wrap:break-word;white-space:normal;">${esc(h.name)}</span><span style="font-size:11px;font-family:var(--mono);color:${h.color};flex-shrink:0;">${d}/${l30.filter((d) => habitAllowedOnDate(h, d)).length}</span></div>${pbar(pct, h.color)}</div>`).join("")}
   </div>
 </div>`;
 }
@@ -1086,35 +747,24 @@ ${insights.map((ins) => `<div class="ins-card" style="border:1px solid ${iC[ins.
    PROFILE VIEW
 ══════════════════════════════════ */
 function vProfile() {
-  const p = S.profile,
-    initials = p.fullName
-      .split(" ")
-      .map((w) => w[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  const bestStreak = S.habits.reduce(
-    (b, h) => ((h.longestStreak || 0) > b ? h.longestStreak || 0 : b),
-    0,
-  );
+  const p = S.profile, initials = p.fullName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  const bestStreak = S.habits.reduce((b, h) => ((h.longestStreak || 0) > b ? h.longestStreak || 0 : b), 0);
   const bestH = S.habits.find((h) => h.longestStreak === bestStreak);
   const densities = [
     { id: "compact", icon: "▤", label: "Compact" },
     { id: "comfortable", icon: "▥", label: "Comfortable" },
     { id: "spacious", icon: "▦", label: "Spacious" },
   ];
-  const yearSteps = Array.from({ length: 365 }, (_, i) =>
-    addDays(new Date(new Date().getFullYear(), 0, 1), i),
-  ).reduce((s, d) => s + (getDayPlan(d).steps || 0), 0);
+  const yearSteps = Array.from({ length: 365 }, (_, i) => addDays(new Date(new Date().getFullYear(), 0, 1), i)).reduce((s, d) => s + (getDayPlan(d).steps || 0), 0);
+  const bestStreakLabel = bestH ? `${bestH.longestStreak || 0}d · ${(bestH.name || "").slice(0, 16)}${(bestH.name || "").length > 16 ? "…" : ""}` : null;
 
   return `
-<!-- Profile header + Stats side by side -->
 <div class="card-pair">
   <div class="card">
     <div style="display:flex;align-items:center;gap:14px;">
       <div class="profile-ava">${initials}</div>
-      <div>
-        <div style="font-size:18px;font-weight:600;">${esc(p.fullName)}</div>
+      <div style="min-width:0;">
+        <div style="font-size:18px;font-weight:600;word-break:break-word;overflow-wrap:break-word;white-space:normal;">${esc(p.fullName)}</div>
         <div style="font-size:11px;font-family:var(--mono);color:${C.muted};">Joined ${fmt(p.joinDate, { month: "short", day: "numeric", year: "numeric" })}</div>
       </div>
     </div>
@@ -1125,15 +775,10 @@ function vProfile() {
       ["📅", "Days logged", Object.keys(S.dayPlans).length],
       ["🔥", "Habits tracked", S.habits.length],
       ["👟", "Steps this year", yearSteps.toLocaleString()],
-      bestH
-        ? ["🏆", "Best streak", `${bestH.longestStreak || 0}d · ${bestH.name}`]
-        : null,
+      bestH ? ["🏆", "Best streak", bestStreakLabel] : null,
     ]
       .filter(Boolean)
-      .map(
-        ([icon, label, value]) =>
-          `<div class="stat-row"><span style="font-size:14px;">${icon} ${label}</span><span style="font-size:13px;color:${C.muted};font-family:var(--mono);">${value}</span></div>`,
-      )
+      .map(([icon, label, value]) => `<div class="stat-row"><span style="font-size:14px;">${icon} ${label}</span><span style="font-size:13px;color:${C.muted};font-family:var(--mono);word-break:break-word;overflow-wrap:break-word;white-space:normal;max-width:120px;">${value}</span></div>`)
       .join("")}
   </div>
 </div>
@@ -1151,7 +796,7 @@ function vProfile() {
   <button class="btn btn-g btn-full" style="margin-bottom:8px;" onclick="exportData()">📤 Export Data (JSON)</button>
   <button class="btn btn-g btn-full" style="margin-bottom:8px;color:${C.accent};border-color:${C.accent}40;" onclick="document.getElementById('importFile').click()">📥 Import Data (JSON)</button>
   <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(this)"/>
-  <button class="btn btn-g btn-full" button onclick="confirmClear()" style="background:${C.red}20;border:1px solid ${C.red}40;color:${C.red};border-radius:10px;padding:10px 16px;cursor:pointer;font-size:14px;width:100%;text-align:left;">🗑 Clear All Data</button>
+  <button class="btn btn-g btn-full" onclick="confirmClear()" style="background:${C.red}20;border:1px solid ${C.red}40;color:${C.red};border-radius:10px;padding:10px 16px;cursor:pointer;font-size:14px;width:100%;text-align:left;">🗑 Clear All Data</button>
 </div>
 <div class="card card-solo" style="text-align:center;"><div style="font-size:13px;font-weight:600;margin-bottom:4px;">Life Planner</div><div style="font-size:10px;font-family:var(--mono);color:${C.muted};">v2.1 · Offline · No account needed</div></div>`;
 }
@@ -1165,12 +810,7 @@ function renderModal() {
   const div = document.createElement("div");
   div.id = "modalOverlay";
   div.className = "modal-bg";
-  div.onclick = (e) => {
-    if (e.target === div) {
-      S.modal = null;
-      renderModal();
-    }
-  };
+  div.onclick = (e) => { if (e.target === div) { S.modal = null; renderModal(); } };
   div.innerHTML = `<div class="modal-sheet">${buildModal(S.modal)}</div>`;
   document.body.appendChild(div);
   setTimeout(() => div.querySelector("[autofocus]")?.focus(), 80);
@@ -1189,8 +829,7 @@ function buildModal(m) {
     return `<div class="modal-hd"><div class="modal-title">Add Transaction</div><button style="font-size:22px;color:${C.muted};" onclick="closeModal()">×</button></div><div style="display:flex;gap:8px;margin-bottom:14px;"><button onclick="S._mType='expense';renderModal();" style="flex:1;padding:10px 0;border-radius:8px;border:1.5px solid ${!isInc ? C.red : C.border};background:${!isInc ? C.red + "20" : "none"};color:${!isInc ? C.red : C.muted};cursor:pointer;font-weight:600;font-size:13px;">Expense</button><button onclick="S._mType='income';renderModal();" style="flex:1;padding:10px 0;border-radius:8px;border:1.5px solid ${isInc ? C.green : C.border};background:${isInc ? C.green + "20" : "none"};color:${isInc ? C.green : C.muted};cursor:pointer;font-weight:600;font-size:13px;">Income</button></div><input autofocus type="text" id="mMoneyDesc" placeholder="Description" style="margin-bottom:10px;"/><input type="number" id="mMoneyAmt" placeholder="Amount" min="0" step="0.01" style="margin-bottom:10px;"/><input type="text" id="mMoneyCat" placeholder="Category (optional)" style="margin-bottom:16px;"/><div style="display:flex;gap:10px;"><button class="btn btn-g" style="flex:1;" onclick="closeModal()">Cancel</button><button class="btn btn-a" style="flex:1;" onclick="submitMoney()">Add</button></div>`;
   }
   if (m.type === "addHabit" || m.type === "editHabit") {
-    const h = m.habit || {},
-      f = S._hForm;
+    const h = m.habit || {}, f = S._hForm;
     return `<div class="modal-hd"><div class="modal-title">${m.type === "editHabit" ? "Edit Habit" : "New Habit"}</div><button style="font-size:22px;color:${C.muted};" onclick="closeModal()">×</button></div><div class="form-lbl" style="margin-top:0;">NAME & ICON</div><div style="display:flex;gap:8px;margin-bottom:10px;"><input type="text" id="hbEmoji" value="${f.emoji}" style="width:54px;flex-shrink:0;" oninput="S._hForm.emoji=this.value"/><input autofocus type="text" id="hbName" value="${h.name || ""}" placeholder="Habit name" style="flex:1;"/></div><div class="emoji-grid">${HABIT_EMOJIS.map((e) => `<button class="ep-btn" onclick="pickE('${e}')" style="background:${f.emoji === e ? f.color + "30" : "none"};border-color:${f.emoji === e ? f.color : "transparent"};">${e}</button>`).join("")}</div><div class="form-lbl">COLOR</div><div class="color-row">${HABIT_COLORS.map((col) => `<button class="cp-dot" onclick="pickC('${col}')" style="background:${col};border-color:${f.color === col ? "white" : "transparent"};"></button>`).join("")}</div><div class="form-lbl">FREQUENCY</div><div style="display:flex;gap:8px;margin-bottom:18px;">${FREQ.map((fr) => `<button onclick="pickF('${fr}')" style="flex:1;padding:10px 0;border-radius:8px;border:1.5px solid ${f.frequency === fr ? f.color : C.border};background:${f.frequency === fr ? f.color + "20" : "none"};color:${f.frequency === fr ? f.color : C.muted};cursor:pointer;font-size:12px;font-weight:600;">${fr}</button>`).join("")}</div><div style="display:flex;gap:10px;"><button class="btn btn-g" style="flex:1;" onclick="closeModal()">Cancel</button><button class="btn" style="flex:1;background:${f.color};color:#000;" onclick="submitHabit('${h.id || ""}')">${m.type === "editHabit" ? "Save" : "Add"}</button></div>`;
   }
   if (m.type === "jumpDate")
@@ -1209,33 +848,19 @@ function navDate(n) {
   S.selDate = next;
   renderContent();
 }
-function goToday() {
-  S.selDate = new Date();
-  renderContent();
-}
+function goToday() { S.selDate = new Date(); renderContent(); }
 function jumpToDate(isoKey) {
   const parts = isoKey.split("-");
-  S.selDate = new Date(
-    parseInt(parts[0]),
-    parseInt(parts[1]) - 1,
-    parseInt(parts[2]),
-  );
+  S.selDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
   S.tab = "daily";
   render();
 }
-function openJumpDate() {
-  S.modal = { type: "jumpDate" };
-  renderModal();
-}
+function openJumpDate() { S.modal = { type: "jumpDate" }; renderModal(); }
 function submitJumpDate() {
   const v = document.getElementById("mJumpDate")?.value;
   if (!v) return;
   const parts = v.split("-");
-  S.selDate = new Date(
-    parseInt(parts[0]),
-    parseInt(parts[1]) - 1,
-    parseInt(parts[2]),
-  );
+  S.selDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
   closeModal();
   renderContent();
 }
@@ -1254,21 +879,12 @@ function setWater(n) {
   patchDay(S.selDate, { waterGlasses: p.waterGlasses === n ? n - 1 : n });
   renderContent();
 }
-function setSteps(n) {
-  patchDay(S.selDate, { steps: Math.max(0, n) });
-  renderContent();
-}
-function saveNote(v) {
-  patchDay(S.selDate, { notes: v });
-}
-function saveExercise(v) {
-  patchDay(S.selDate, { exerciseNote: v });
-}
+function setSteps(n) { patchDay(S.selDate, { steps: Math.max(0, n) }); renderContent(); }
+function saveNote(v) { patchDay(S.selDate, { notes: v }); }
+function saveExercise(v) { patchDay(S.selDate, { exerciseNote: v }); }
 function toggleCL(field, id) {
   const p = getDayPlan(S.selDate);
-  p[field] = (p[field] || []).map((i) =>
-    i.id === id ? { ...i, isDone: !i.isDone } : i,
-  );
+  p[field] = (p[field] || []).map((i) => i.id === id ? { ...i, isDone: !i.isDone } : i);
   saveDayPlan(p);
   renderContent();
 }
@@ -1278,35 +894,23 @@ function deleteCL(field, id) {
   saveDayPlan(p);
   renderContent();
 }
-function openAddText(field) {
-  S.modal = { type: "addText", field };
-  renderModal();
-}
+function openAddText(field) { S.modal = { type: "addText", field }; renderModal(); }
 function submitText() {
   const text = document.getElementById("mText")?.value.trim();
   if (!text) return;
   const p = getDayPlan(S.selDate);
-  p[S.modal.field] = [
-    ...(p[S.modal.field] || []),
-    { id: uid(), text, isDone: false },
-  ];
+  p[S.modal.field] = [...(p[S.modal.field] || []), { id: uid(), text, isDone: false }];
   saveDayPlan(p);
   closeModal();
   renderContent();
 }
-function openSchedModal() {
-  S.modal = { type: "addSched" };
-  renderModal();
-}
+function openSchedModal() { S.modal = { type: "addSched" }; renderModal(); }
 function submitSched() {
   const time = document.getElementById("mSchedTime")?.value || "09:00";
   const text = document.getElementById("mSchedText")?.value.trim();
   if (!text) return;
   const p = getDayPlan(S.selDate);
-  const items = [
-    ...(p.scheduleItems || []),
-    { id: uid(), time: fmtTime(time), text, _raw: time },
-  ];
+  const items = [...(p.scheduleItems || []), { id: uid(), time: fmtTime(time), text, _raw: time }];
   items.sort((a, b) => a._raw.localeCompare(b._raw));
   p.scheduleItems = items;
   saveDayPlan(p);
@@ -1319,27 +923,14 @@ function deleteSchedItem(idx) {
   saveDayPlan(p);
   renderContent();
 }
-function openAddMoney() {
-  S._mType = "expense";
-  S.modal = { type: "addMoney" };
-  renderModal();
-}
+function openAddMoney() { S._mType = "expense"; S.modal = { type: "addMoney" }; renderModal(); }
 function submitMoney() {
   const desc = document.getElementById("mMoneyDesc")?.value.trim();
   const amt = parseFloat(document.getElementById("mMoneyAmt")?.value);
   const cat = document.getElementById("mMoneyCat")?.value.trim();
   if (!desc || !amt || amt <= 0) return;
   const p = getDayPlan(S.selDate);
-  p.moneyEntries = [
-    ...(p.moneyEntries || []),
-    {
-      id: uid(),
-      type: S._mType,
-      description: desc,
-      amount: amt,
-      category: cat,
-    },
-  ];
+  p.moneyEntries = [...(p.moneyEntries || []), { id: uid(), type: S._mType, description: desc, amount: amt, category: cat }];
   saveDayPlan(p);
   closeModal();
   renderContent();
@@ -1350,89 +941,46 @@ function deleteMoney(id) {
   saveDayPlan(p);
   renderContent();
 }
-
 function toggleHabitDay(habitId) {
-  const d = S.selDate;
-  const p = getDayPlan(d);
-
-  const h = S.habits.find((x) => x.id === habitId);
+  const d = S.selDate, p = getDayPlan(d), h = S.habits.find((x) => x.id === habitId);
   if (!h) return;
   if (!habitAllowedOnDate(h, d)) return;
-
   const was = (p.habitsDone || []).includes(habitId);
-
-  p.habitsDone = was
-    ? p.habitsDone.filter((i) => i !== habitId)
-    : [...(p.habitsDone || []), habitId];
-
+  p.habitsDone = was ? p.habitsDone.filter((i) => i !== habitId) : [...(p.habitsDone || []), habitId];
   saveDayPlan(p);
-
   S.habits = S.habits.map((h) => {
     if (h.id !== habitId) return h;
-
     const newStreak = calcHabitStreak(habitId);
-
-    return {
-      ...h,
-      currentStreak: newStreak,
-      longestStreak: Math.max(h.longestStreak || 0, newStreak),
-    };
+    return { ...h, currentStreak: newStreak, longestStreak: Math.max(h.longestStreak || 0, newStreak) };
   });
-
   saveHabits();
   renderContent();
 }
-
 function habitAllowedOnDate(habit, date) {
   const d = new Date(date).getDay();
-
   if (habit.frequency === "Daily") return true;
   if (habit.frequency === "Weekdays") return d >= 1 && d <= 5;
   if (habit.frequency === "Weekends") return d === 0 || d === 6;
-
   return true;
 }
-
 function calcHabitStreak(habitId) {
   const habit = S.habits.find((h) => h.id === habitId);
   if (!habit) return 0;
-
-  let streak = 0;
-  let d = new Date();
+  let streak = 0, d = new Date();
   const limit = new Date(S.profile?.joinDate || 0);
-
   while (d >= limit) {
     const p = getDayPlan(d);
-
-    if (!habitAllowedOnDate(habit, d)) {
-      d = addDays(d, -1);
-      continue;
-    }
-
-    if ((p.habitsDone || []).includes(habitId)) {
-      streak++;
-      d = addDays(d, -1);
-    } else {
-      break;
-    }
+    if (!habitAllowedOnDate(habit, d)) { d = addDays(d, -1); continue; }
+    if ((p.habitsDone || []).includes(habitId)) { streak++; d = addDays(d, -1); } else { break; }
   }
-
   return streak;
 }
-
 function sumMoney(plan, type) {
-  return (plan.moneyEntries || [])
-    .filter((e) => e.type === type)
-    .reduce((a, e) => a + e.amount, 0);
+  return (plan.moneyEntries || []).filter((e) => e.type === type).reduce((a, e) => a + e.amount, 0);
 }
-
 function openHabitModal(id) {
   const h = id ? S.habits.find((x) => x.id === id) : null;
-  S._hForm = {
-    emoji: h?.emoji || "✨",
-    color: h?.color || HABIT_COLORS[0],
-    frequency: h?.frequency || "Daily",
-  };
+  S._hForm = { emoji: h?.emoji || "✨", color: h?.color || HABIT_COLORS[0], frequency: h?.frequency || "Daily" };
   S.modal = { type: id ? "editHabit" : "addHabit", habit: h };
   renderModal();
 }
@@ -1442,26 +990,14 @@ function pickE(e) {
   if (el) el.value = e;
   renderModal();
 }
-function pickC(c) {
-  S._hForm.color = c;
-  renderModal();
-}
-function pickF(f) {
-  S._hForm.frequency = f;
-  renderModal();
-}
+function pickC(c) { S._hForm.color = c; renderModal(); }
+function pickF(f) { S._hForm.frequency = f; renderModal(); }
 function deleteHabit(id) {
   if (!confirm("Delete this habit?")) return;
-
-  // remove habit from habit list
   S.habits = S.habits.filter((h) => h.id !== id);
-
-  // remove from today's plan (not past history)
   const todayKey = dk(new Date());
   if (S.dayPlans[todayKey]) {
-    S.dayPlans[todayKey].habitsDone = (
-      S.dayPlans[todayKey].habitsDone || []
-    ).filter((h) => h !== id);
+    S.dayPlans[todayKey].habitsDone = (S.dayPlans[todayKey].habitsDone || []).filter((h) => h !== id);
   }
   saveHabits();
   savePlans();
@@ -1473,47 +1009,18 @@ function submitHabit(editId) {
   if (!name) return;
   const f = S._hForm;
   if (editId) {
-    S.habits = S.habits.map((h) =>
-      h.id === editId
-        ? { ...h, name, emoji: f.emoji, color: f.color, frequency: f.frequency }
-        : h,
-    );
+    S.habits = S.habits.map((h) => h.id === editId ? { ...h, name, emoji: f.emoji, color: f.color, frequency: f.frequency } : h);
   } else {
-    S.habits.push({
-      id: uid(),
-      name,
-      emoji: f.emoji || "✨",
-      color: f.color || HABIT_COLORS[0],
-      frequency: f.frequency || "Daily",
-      currentStreak: 0,
-      longestStreak: 0,
-      order: S.habits.length,
-    });
+    S.habits.push({ id: uid(), name, emoji: f.emoji || "✨", color: f.color || HABIT_COLORS[0], frequency: f.frequency || "Daily", currentStreak: 0, longestStreak: 0, order: S.habits.length });
   }
   saveHabits();
   closeModal();
   renderContent();
 }
-function calSel(iso, isSel) {
-  S.selCalDay = isSel === "true" ? null : iso;
-  renderContent();
-}
-function setDensity(d) {
-  S.density = d;
-  saveDensity();
-  renderContent();
-}
+function calSel(iso, isSel) { S.selCalDay = isSel === "true" ? null : iso; renderContent(); }
+function setDensity(d) { S.density = d; saveDensity(); renderContent(); }
 function exportData() {
-  const blob = new Blob(
-    [
-      JSON.stringify(
-        { profile: S.profile, dayPlans: S.dayPlans, habits: S.habits },
-        null,
-        2,
-      ),
-    ],
-    { type: "application/json" },
-  );
+  const blob = new Blob([JSON.stringify({ profile: S.profile, dayPlans: S.dayPlans, habits: S.habits }, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "lifeplanner-backup.json";
@@ -1526,10 +1033,7 @@ function importData(input) {
   reader.onload = (e) => {
     try {
       const data = JSON.parse(e.target.result);
-      if (data.dayPlans) {
-        S.dayPlans = data.dayPlans;
-        Object.keys(planCache).forEach((k) => delete planCache[k]);
-      }
+      if (data.dayPlans) { S.dayPlans = data.dayPlans; Object.keys(planCache).forEach((k) => delete planCache[k]); }
       if (data.profile) S.profile = data.profile;
       if (Array.isArray(data.habits)) {
         const ids = new Set(S.habits.map((h) => h.id));
@@ -1549,30 +1053,19 @@ function importData(input) {
   reader.readAsText(file);
 }
 function confirmClear() {
-  if (
-    confirm("Delete all data permanently?") &&
-    confirm("This cannot be undone.")
-  ) {
-    ["lp_dayPlans", "lp_habits", "lp_profile"].forEach((k) =>
-      localStorage.removeItem(k),
-    );
+  if (confirm("Delete all data permanently?") && confirm("This cannot be undone.")) {
+    ["lp_dayPlans", "lp_habits", "lp_profile"].forEach((k) => localStorage.removeItem(k));
     location.reload();
   }
 }
-
 function recalculateAllStreaks() {
   S.habits = S.habits.map((h) => {
     const streak = calcHabitStreak(h.id);
-
-    return {
-      ...h,
-      currentStreak: streak,
-      longestStreak: Math.max(h.longestStreak || 0, streak),
-    };
+    return { ...h, currentStreak: streak, longestStreak: Math.max(h.longestStreak || 0, streak) };
   });
-
   saveHabits();
 }
+
 /* ══════════════════════════════════
    ONBOARD
 ══════════════════════════════════ */
@@ -1591,11 +1084,7 @@ function renderOnboard() {
 function obStart() {
   const name = (document.getElementById("obName")?.value || "").trim();
   if (!name) return;
-  S.profile = {
-    userID: uid(),
-    fullName: name,
-    joinDate: new Date().toISOString(),
-  };
+  S.profile = { userID: uid(), fullName: name, joinDate: new Date().toISOString() };
   saveProfile();
   document.getElementById("onboard")?.remove();
   document.getElementById("header").style.display = "";
@@ -1606,54 +1095,33 @@ function obStart() {
 /* ══════════════════════════════════
    INIT
 ══════════════════════════════════ */
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && S.modal) closeModal(); });
 
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && S.modal) closeModal();
-});
-
-/* Viewport height fix (fallback only) */
 function setVH() {
-  document.documentElement.style.setProperty(
-    "--vh",
-    `${window.innerHeight * 0.01}px`,
-  );
+  document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`);
 }
-
 setVH();
 
-/* Resize handling */
 let resizeTimeout;
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    setVH();
-    render();
-  }, 150);
+  resizeTimeout = setTimeout(() => { setVH(); render(); }, 150);
 });
 
-/* Initial render */
 render();
 
 /* ══════════════════════════════════
    SERVICE WORKER
 ══════════════════════════════════ */
-
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
       const reg = await navigator.serviceWorker.register("/service-worker.js");
-
       console.log("Service Worker registered");
-
-      // update check
       reg.onupdatefound = () => {
         const newWorker = reg.installing;
-
         newWorker.onstatechange = () => {
-          if (
-            newWorker.state === "installed" &&
-            navigator.serviceWorker.controller
-          ) {
+          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
             alert("New version available. Refresh to update.");
           }
         };
