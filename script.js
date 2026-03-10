@@ -467,7 +467,7 @@ function vDaily() {
 </div>
 
 <!-- Money -->
-<div class="card card-solo">
+<div class="card card-solo stat-val">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
     <span class="slabel" style="margin-bottom:0;">💰 Money</span>
     <button style="color:${C.green};font-size:22px;padding:0 4px;font-weight:300;" onclick="openAddMoney()">+</button>
@@ -481,7 +481,7 @@ function vDaily() {
       .map(([l, v, col]) => `<div style="text-align:center;background:${col}12;border:1px solid ${col}30;border-radius:10px;padding:10px 8px;"><div style="font-size:9px;font-family:var(--mono);color:${C.muted};">${l}</div><div style="font-size:14px;font-weight:700;color:${col};font-family:var(--mono);">${v}</div></div>`)
       .join("")}
   </div>
-  ${entries.map((e) => `<div class="money-row"><div style="width:8px;height:8px;border-radius:99px;background:${e.type === "income" ? C.green : C.red};flex-shrink:0;"></div><span style="flex:1;font-size:13px;word-break:break-word;overflow-wrap:break-word;white-space:normal;">${esc(e.description)}</span>${e.category ? `<span style="font-size:10px;font-family:var(--mono);color:${C.muted};flex-shrink:0;">${esc(e.category)}</span>` : ""}<span style="font-size:14px;font-weight:700;font-family:var(--mono);color:${e.type === "income" ? C.green : C.red};flex-shrink:0;">${e.type === "income" ? "+" : "-"}₹${e.amount.toFixed(2)}</span><button class="icon-btn" onclick="deleteMoney('${e.id}')">✕</button></div>`).join("")}
+  ${entries.map((e) => `<div class="money-row"><div style="width:8px;height:8px;border-radius:99px;background:${e.type === "income" ? C.green : C.red};flex-shrink:0;"></div><span style="flex:1;font-size:13px;word-break:break-word;overflow-wrap:break-word;white-space:normal;">${esc(e.description)}</span>${e.category ? `<span style="font-size:10px;font-family:var(--mono);color:${C.muted};flex-shrink:0;">${esc(e.category)}</span>` : ""}<span style="font-size:14px;font-weight:700;font-family:var(--mono);color:${e.type === "income" ? C.green : C.red};flex-shrink:0;">₹${e.type === "income" ? "+" : "-"}${e.amount.toFixed(2)}</span><button class="icon-btn" onclick="deleteMoney('${e.id}')">✕</button></div>`).join("")}
 </div>
 
 <!-- Notes -->
@@ -588,7 +588,7 @@ function vWeekly() {
   <button class="nav-arrow" onclick="if(S.wkOffset<0){S.wkOffset++;renderContent();}" style="opacity:${canFwd ? 1 : 0.3};">›</button>
 </div>
 
-<div class="sg4">
+<div class="card card-solo sg4">
   <div class="stat-tile" style="background:${C.accent}12;border:1px solid ${C.accent}30;"><div class="stat-icon">🔥</div><div class="stat-val" style="color:${C.accent};">${Math.round(habRate * 100)}%</div><div class="stat-lbl">Habit Rate</div></div>
   <div class="stat-tile" style="background:${C.yellow}12;border:1px solid ${C.yellow}30;"><div class="stat-icon">${avgMood != null ? MOODS[Math.round(avgMood)].emoji : "—"}</div><div class="stat-val" style="color:${C.yellow};font-size:18px;">${avgMood != null ? MOODS[Math.round(avgMood)].label : "—"}</div><div class="stat-lbl">Avg Mood</div></div>
   <div class="stat-tile" style="background:${C.red}12;border:1px solid ${C.red}30;"><div class="stat-icon">💳</div><div class="stat-val" style="color:${C.red};">₹${Math.round(weekSpend)}</div><div class="stat-lbl">Spent</div></div>
@@ -668,7 +668,7 @@ function vMonthly() {
   <div style="text-align:center;"><div style="font-size:18px;font-weight:700;">${target.toLocaleDateString("en-US", { month: "long", year: "numeric" })}</div>${mo !== 0 ? `<button style="font-size:10px;font-family:var(--mono);color:${C.accent};background:${C.accent}18;border:1px solid ${C.accent}30;border-radius:6px;padding:2px 8px;cursor:pointer;margin-top:4px;" onclick="S.moOffset=0;S.selCalDay=null;renderContent();">This Month</button>` : ""}</div>
   <button class="nav-arrow" onclick="if(S.moOffset<0){S.moOffset++;S.selCalDay=null;renderContent();}" style="opacity:${mo < 0 ? 1 : 0.3};">›</button>
 </div>
-<div class="sg4">${statTile("Income", `₹${income.toFixed(0)}`, C.green, "💰")}${statTile("Expenses", `₹${expense.toFixed(0)}`, C.red, "💸")}${statTile("Habits", String(habDone), C.accent, "🔥")}${statTile("Steps", totalSteps >= 1000 ? Math.round(totalSteps / 1000) + "k" : String(totalSteps), C.blue, "👟")}</div>
+<div class="card card-solo sg4">${statTile("Income", `₹${income.toFixed(0)}`, C.green, "💰")}${statTile("Expenses", `₹${expense.toFixed(0)}`, C.red, "💸")}${statTile("Habits", String(habDone), C.accent, "🔥")}${statTile("Steps", totalSteps >= 1000 ? Math.round(totalSteps / 1000) + "k" : String(totalSteps), C.blue, "👟")}</div>
 
 <!-- Calendar + Day detail -->
 <div class="card-pair">
@@ -770,7 +770,7 @@ function vAnnual() {
   <div style="font-size:20px;font-weight:700;">${y} Annual Report</div>
   <button class="nav-arrow" onclick="if(S.annYear<${thisYear}){S.annYear++;renderContent();}" style="opacity:${y < thisYear ? 1 : 0.3};">›</button>
 </div>
-<div class="sg4">${statTile("Days Logged", String(daysLogged), C.accent, "📅")}${statTile("Total Steps", totalSteps >= 1000 ? Math.round(totalSteps / 1000) + "k" : String(totalSteps), C.blue, "👟")}${statTile("Habits Done", String(habitsCompleted), C.green, "🔥")}${statTile("Net Money", `₹${Math.round(totalIncome - totalExpense)}`, totalIncome >= totalExpense ? C.green : C.red, "💰")}</div>
+<div class="card card-solo sg4">${statTile("Days Logged", String(daysLogged), C.accent, "📅")}${statTile("Total Steps", totalSteps >= 1000 ? Math.round(totalSteps / 1000) + "k" : String(totalSteps), C.blue, "👟")}${statTile("Habits Done", String(habitsCompleted), C.green, "🔥")}${statTile("Net Money", `₹${Math.round(totalIncome - totalExpense)}`, totalIncome >= totalExpense ? C.green : C.red, "💰")}</div>
 <div class="sg2">${statTile("Avg Mood", avgMood != null ? `${MOODS[Math.round(avgMood)]?.emoji} ${(avgMood + 1).toFixed(1)}` : "—", C.yellow, "😊")}${statTile("Best Streak", `${bestStreakH.val}d`, C.orange, "🏆")}</div>
 
 <div class="card card-solo">
@@ -785,7 +785,7 @@ function vAnnual() {
   <div class="annual-hm">${heatWeeks.map((week) => `<div class="annual-col">${week.map((day) => { const pp = getDayPlan(day), mc = moodColor(pp), isTdy = isToday(day); return `<div class="ahm-cell" style="background:${mc || C.muted + "18"};${isTdy ? `outline:1.5px solid ${C.green};outline-offset:1px;` : ""}"></div>`; }).join("")}</div>`).join("")}</div>
 </div>
 
-<div class="card card-solo"><span class="slabel">Month-by-Month</span><div class="ann-months">${monthData.map((m, mi) => {
+<div class="card card-solo stat-val"><span class="slabel">Month-by-Month</span><div class="ann-months">${monthData.map((m, mi) => {
   const isCurrent = mi === new Date().getMonth() && y === thisYear;
   const mAvgMood = m.moodDays.length > 0 ? m.moodDays.reduce((s, p) => s + p.mood, 0) / m.moodDays.length : null;
   return `<div class="ann-month-card" style="${isCurrent ? `border-color:${C.accent}40;` : ""}"><div class="ann-month-name" style="${isCurrent ? `color:${C.accent};` : ""}">${m.name}</div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.blue};">👟</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.steps / maxSteps) * 100}%;background:${C.blue};"></div></div><span class="ann-bar-val" style="color:${C.blue};">${m.steps >= 1000 ? Math.round(m.steps / 1000) + "k" : m.steps}</span></div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.accent};">🔥</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.habits / maxHabits) * 100}%;background:${C.accent};"></div></div><span class="ann-bar-val" style="color:${C.accent};">${m.habits}</span></div><div class="ann-bar-row"><span class="ann-bar-label" style="color:${C.red};">💸</span><div class="ann-bar-track"><div class="ann-bar-fill" style="width:${(m.expense / maxExpense) * 100}%;background:${C.red};"></div></div><span class="ann-bar-val" style="color:${C.red};">₹${Math.round(m.expense)}</span></div>${mAvgMood != null ? `<div style="text-align:center;margin-top:6px;font-size:16px;">${MOODS[Math.round(mAvgMood)]?.emoji || ""}</div>` : '<div style="margin-top:10px;height:20px;"></div>'}</div>`;
@@ -808,7 +808,7 @@ function vAnnual() {
   </div>
 </div>
 
-<div class="card card-solo"><span class="slabel">Finance — ${y}</span><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;"><div style="text-align:center;"><div style="font-size:9px;font-family:var(--mono);color:${C.muted};">INCOME</div><div style="font-size:20px;font-weight:700;color:${C.green};font-family:var(--mono);">₹${Math.round(totalIncome)}</div></div><div style="text-align:center;"><div style="font-size:9px;font-family:var(--mono);color:${C.muted};">EXPENSES</div><div style="font-size:20px;font-weight:700;color:${C.red};font-family:var(--mono);">₹${Math.round(totalExpense)}</div></div><div style="text-align:center;"><div style="font-size:9px;font-family:var(--mono);color:${C.muted};">NET</div><div style="font-size:20px;font-weight:700;color:${totalIncome >= totalExpense ? C.green : C.red};font-family:var(--mono);">₹${Math.round(totalIncome - totalExpense)}</div></div></div>${pbar(totalExpense / (totalIncome || 1), C.red, 8)}<div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;font-family:var(--mono);color:${C.muted};"><span>Savings: ${totalIncome > 0 ? Math.round((1 - totalExpense / totalIncome) * 100) : 0}%</span><span>${Math.round((totalExpense / (totalIncome || 1)) * 100)}% spent</span></div></div>`;
+<div class="card card-solo stat-val"><span class="slabel">Finance — ${y}</span><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;"><div style="text-align:center;"><div style="font-size:9px;font-family:var(--mono);color:${C.muted};">INCOME</div><div style="font-size:16px;font-weight:700;color:${C.green};font-family:var(--mono);">₹${Math.round(totalIncome)}</div></div><div style="text-align:center;"><div style="font-size:9px;font-family:var(--mono);color:${C.muted};">EXPENSES</div><div style="font-size:16px;font-weight:700;color:${C.red};font-family:var(--mono);">₹${Math.round(totalExpense)}</div></div><div style="text-align:center;"><div style="font-size:9px;font-family:var(--mono);color:${C.muted};">NET</div><div style="font-size:16px;font-weight:700;color:${totalIncome >= totalExpense ? C.green : C.red};font-family:var(--mono);">₹${Math.round(totalIncome - totalExpense)}</div></div></div>${pbar(totalExpense / (totalIncome || 1), C.red, 8)}<div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;font-family:var(--mono);color:${C.muted};"><span>Savings: ${totalIncome > 0 ? Math.round((1 - totalExpense / totalIncome) * 100) : 0}%</span><span>${Math.round((totalExpense / (totalIncome || 1)) * 100)}% spent</span></div></div>`;
 }
 
 /* ══════════════════════════════════
