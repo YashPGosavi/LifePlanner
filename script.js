@@ -131,16 +131,26 @@ const S = {
   density: lsGet("lp_density") || "comfortable",
 };
 
+const planCache = {};
 const savePlans = () => lsSet("lp_dayPlans", S.dayPlans);
 const saveHabits = () => lsSet("lp_habits", S.habits);
 const saveProfile = () => lsSet("lp_profile", S.profile);
 const saveDensity = () => lsSet("lp_density", S.density);
 const getDayPlan = (d) => {
   const k = dk(d);
-  return S.dayPlans[k] ? { ...emptyPlan(d), ...S.dayPlans[k] } : emptyPlan(d);
+
+  if (planCache[k]) return planCache[k];
+
+  const p = S.dayPlans[k]
+    ? { ...emptyPlan(d), ...S.dayPlans[k] }
+    : emptyPlan(d);
+
+  planCache[k] = p;
+  return p;
 };
 function saveDayPlan(p) {
   S.dayPlans[p.id] = p;
+  planCache[p.id] = p;
   savePlans();
 }
 function patchDay(d, patch) {
@@ -172,7 +182,7 @@ function startOfWeek(date) {
   return d;
 }
 function uid() {
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+  return crypto.randomUUID?.() || Math.random().toString(36).slice(2);
 }
 function fmt(date, opts) {
   return new Date(date).toLocaleDateString("en-US", opts);
@@ -264,10 +274,13 @@ function vDaily() {
   tmr.setHours(23, 59, 59, 999);
   const isT = isToday(d),
     canFwd = d < tmr;
+  const todaysHabits = S.habits.filter((h) => habitAllowedOnDate(h, d));
+
   const habDone = (p.habitsDone || []).filter((id) =>
-      S.habits.some((h) => h.id === id),
-    ),
-    habPct = S.habits.length > 0 ? habDone.length / S.habits.length : 0;
+    todaysHabits.some((h) => h.id === id),
+  );
+
+  const habPct = todaysHabits.length ? habDone.length / todaysHabits.length : 0;
   const todos = p.todos || [],
     doneTodos = todos.filter((i) => i.isDone).length;
   const schedItems = p.scheduleItems || [];
@@ -284,12 +297,8 @@ function vDaily() {
 
   // Money summary
   const entries = p.moneyEntries || [];
-  const inc = entries
-    .filter((e) => e.type === "income")
-    .reduce((s, e) => s + e.amount, 0);
-  const exp = entries
-    .filter((e) => e.type === "expense")
-    .reduce((s, e) => s + e.amount, 0);
+  const inc = sumMoney(p, "income");
+  const exp = sumMoney(p, "expense");
   const net = inc - exp;
 
   return `
@@ -351,6 +360,7 @@ function vDaily() {
     </div>
     ${S.habits.length === 0 ? `<div style="font-size:12px;font-family:var(--mono);color:${C.muted};">Add habits in Habits tab →</div>` : ""}
     ${S.habits
+      .filter((h) => habitAllowedOnDate(h, d))
       .map((h) => {
         const done = habDone.includes(h.id);
         return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(42,42,50,.4);"><button onclick="toggleHabitDay('${h.id}')" style="width:28px;height:28px;border-radius:8px;border:1.5px solid ${done ? h.color : h.color + "40"};background:${done ? h.color : "none"};cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#000;flex-shrink:0;transition:all .2s;">${done ? "✓" : ""}</button><span style="font-size:16px;">${h.emoji}</span><span style="flex:1;font-size:14px;">${esc(h.name)}</span><span style="background:${h.color}20;border-radius:99px;padding:3px 9px;font-size:12px;font-weight:700;font-family:var(--mono);color:${h.color};">🔥${h.currentStreak || 0}d</span></div>`;
@@ -362,7 +372,7 @@ function vDaily() {
     <div style="display:flex;align-items:center;gap:16px;">
       ${ring(Math.min((p.steps || 0) / STEPS_GOAL, 1), (p.steps || 0) >= STEPS_GOAL ? C.green : C.accent, 72, `<div style="text-align:center;"><div style="font-size:14px;">👟</div><div style="font-size:12px;font-weight:700;font-family:var(--mono);color:${(p.steps || 0) >= STEPS_GOAL ? C.green : C.accent};">${(p.steps || 0) >= 1000 ? ((p.steps || 0) / 1000).toFixed(1) + "k" : p.steps || 0}</div></div>`)}
       <div style="flex:1;">
-        <input type="number" min="0" max="99999" placeholder="Enter steps" value="${p.steps || ""}" style="font-size:20px;font-weight:700;font-family:var(--mono);color:${C.accent};background:none;border:none;border-bottom:1px solid ${C.border};border-radius:0;padding:4px 0;width:100%;" oninput="setSteps(parseInt(this.value)||0)"/>
+        <input type="number" min="0" max="99999" placeholder="Enter steps" value="${p.steps || ""}" style="font-size:20px;font-weight:700;font-family:var(--mono);color:${C.accent};background:none;border:none;border-bottom:1px solid ${C.border};border-radius:0;padding:4px 0;width:100%;" onchange="setSteps(parseInt(this.value)||0)"/>
         <div class="step-presets">${[2000, 5000, 7500, 10000].map((v) => `<button class="step-preset" onclick="setSteps(${v})" style="color:${(p.steps || 0) >= v ? C.accent : C.muted};border-color:${(p.steps || 0) >= v ? C.accent + "40" : C.border};">${v >= 1000 ? v / 1000 + "k" : v}</button>`).join("")}</div>
       </div>
     </div>
@@ -416,18 +426,24 @@ function vDaily() {
 function vHabits() {
   const today = new Date(),
     p = getDayPlan(today),
-    habDone = p.habitsDone || [];
-  const habPct = S.habits.length > 0 ? habDone.length / S.habits.length : 0;
+    todaysHabits = S.habits.filter((h) => habitAllowedOnDate(h, today)),
+    habDone = (p.habitsDone || []).filter((id) =>
+      todaysHabits.some((h) => h.id === id),
+    );
+
+  const habPct = todaysHabits.length ? habDone.length / todaysHabits.length : 0;
   const l30 = Array.from({ length: 30 }, (_, i) => addDays(today, -29 + i));
 
   const cards = S.habits
     .map((h) => {
-      const done30 = l30.map((d) =>
-        (getDayPlan(d).habitsDone || []).includes(h.id),
-      );
-      const count30 = done30.filter(Boolean).length,
-        pct30 = count30 / 30;
+      const done30 = l30.map((d) => {
+        if (!habitAllowedOnDate(h, d)) return null;
+        return (getDayPlan(d).habitsDone || []).includes(h.id);
+      });
       const isDoneToday = habDone.includes(h.id);
+      const allowedDays = done30.filter((v) => v !== null).length;
+      const count30 = done30.filter((v) => v === true).length;
+      const pct30 = allowedDays ? count30 / allowedDays : 0;
       return `<div class="hb-card" style="${isDoneToday ? `border-color:${h.color}50;` : ""}">
   <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
     <div class="hb-emoji-wrap" style="background:${h.color}18;">${h.emoji}</div>
@@ -448,7 +464,7 @@ function vHabits() {
     </div>
   </div>
   <div style="font-size:9px;font-family:var(--mono);color:${C.muted};letter-spacing:1px;margin-bottom:6px;">LAST 30 DAYS</div>
-  <div class="hb-hm">${done30.map((done) => `<div class="hb-hm-cell" style="background:${done ? h.color : h.color + "20"};"></div>`).join("")}</div>
+  <div class="hb-hm">${done30.map((done) => `<div class="hb-hm-cell" style="background:${done === true ? h.color : done === false ? h.color + "20" : C.surface2};"></div>`).join("")}</div>
   <div class="hb-footer"><span>Longest: ${h.longestStreak || 0}d</span><span style="color:${h.color};">${Math.round(pct30 * 100)}% in 30 days</span></div>
   ${pbar(pct30, h.color)}
 </div>`;
@@ -480,24 +496,27 @@ function vWeekly() {
   const wdays = Array.from({ length: 7 }, (_, i) => addDays(sow, i)),
     canFwd = offset < 0;
   const weekPlans = wdays.map((d) => getDayPlan(d));
-  const habRate =
-    S.habits.length > 0
-      ? weekPlans.reduce((s, p) => s + p.habitsDone.length, 0) /
-        (S.habits.length * 7)
-      : 0;
+  let totalAllowed = 0;
+  let totalDone = 0;
+
+  S.habits.forEach((h) => {
+    wdays.forEach((d) => {
+      if (habitAllowedOnDate(h, d)) {
+        totalAllowed++;
+        if ((getDayPlan(d).habitsDone || []).includes(h.id)) {
+          totalDone++;
+        }
+      }
+    });
+  });
+
+  const habRate = totalAllowed ? totalDone / totalAllowed : 0;
   const moodDays = weekPlans.filter((p) => p.mood != null);
   const avgMood =
     moodDays.length > 0
       ? moodDays.reduce((s, p) => s + p.mood, 0) / moodDays.length
       : null;
-  const weekSpend = weekPlans.reduce(
-    (s, p) =>
-      s +
-      (p.moneyEntries || [])
-        .filter((e) => e.type === "expense")
-        .reduce((a, e) => a + e.amount, 0),
-    0,
-  );
+  const weekSpend = weekPlans.reduce((s, p) => s + sumMoney(p, "expense"), 0);
   const tasksDone = weekPlans.reduce(
     (s, p) => s + (p.todos || []).filter((t) => t.isDone).length,
     0,
@@ -556,17 +575,23 @@ function vWeekly() {
     </div>
     ${S.habits
       .map((h) => {
-        const cnt = wdays.filter((d) =>
+        const allowedDays = wdays.filter((d) => habitAllowedOnDate(h, d));
+        const doneDays = allowedDays.filter((d) =>
           (getDayPlan(d).habitsDone || []).includes(h.id),
-        ).length;
+        );
+
+        const cnt = doneDays.length;
+        const pct = allowedDays.length > 0 ? cnt / allowedDays.length : 0;
         return `<div class="hm-row"><div style="flex:1;font-size:12px;display:flex;align-items:center;gap:5px;overflow:hidden;"><span>${h.emoji}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(h.name)}</span></div>${wdays
           .map((d) => {
-            const done = (getDayPlan(d).habitsDone || []).includes(h.id);
-            return `<div style="width:24px;height:24px;border-radius:5px;background:${done ? h.color : h.color + "20"};display:flex;align-items:center;justify-content:center;">${done ? `<span style="font-size:10px;font-weight:900;color:#000;">✓</span>` : ""}</div>`;
+            const allowed = habitAllowedOnDate(h, d);
+            const done =
+              allowed && (getDayPlan(d).habitsDone || []).includes(h.id);
+            return `<div style="width:24px;height:24px;border-radius:5px;background:${!allowed ? C.surface2 : done ? h.color : h.color + "20"};display:flex;align-items:center;justify-content:center;">${done ? `<span style="font-size:10px;font-weight:900;color:#000;">✓</span>` : ""}</div>`;
           })
           .join(
             "",
-          )}<div style="width:36px;font-size:10px;font-family:var(--mono);color:${h.color};text-align:center;">${Math.round((cnt / 7) * 100)}%</div></div>`;
+          )}<div style="width:36px;font-size:10px;font-family:var(--mono);color:${h.color};text-align:center;">${Math.round(pct * 100)}%</div></div>`;
       })
       .join("")}`
     }
@@ -594,22 +619,8 @@ function vMonthly() {
     fWD = new Date(y, m, 1).getDay();
   const days = Array.from({ length: dIM }, (_, i) => new Date(y, m, i + 1)),
     plans = days.map((d) => getDayPlan(d));
-  const income = plans.reduce(
-    (s, p) =>
-      s +
-      (p.moneyEntries || [])
-        .filter((e) => e.type === "income")
-        .reduce((a, e) => a + e.amount, 0),
-    0,
-  );
-  const expense = plans.reduce(
-    (s, p) =>
-      s +
-      (p.moneyEntries || [])
-        .filter((e) => e.type === "expense")
-        .reduce((a, e) => a + e.amount, 0),
-    0,
-  );
+  const income = plans.reduce((s, p) => s + sumMoney(p, "income"), 0);
+  const expense = plans.reduce((s, p) => s + sumMoney(p, "expense"), 0);
   const habDone = plans.reduce((s, p) => s + p.habitsDone.length, 0);
   const totalSteps = plans.reduce((s, p) => s + (p.steps || 0), 0);
   const sel = S.selCalDay;
@@ -678,11 +689,14 @@ function vMonthly() {
     ${S.habits.length === 0 ? `<div style="font-size:12px;font-family:var(--mono);color:${C.muted};">No habits</div>` : ""}
     ${S.habits
       .map((h) => {
-        const done = days.filter((d) =>
-            (getDayPlan(d).habitsDone || []).includes(h.id),
-          ).length,
-          pp = done / dIM;
-        return `<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:13px;">${h.emoji} ${esc(h.name)}</span><span style="font-size:11px;font-family:var(--mono);color:${h.color};">${done}/${dIM}</span></div>${pbar(pp, h.color)}</div>`;
+        const allowedDays = days.filter((d) => habitAllowedOnDate(h, d));
+
+        const done = allowedDays.filter((d) =>
+          (getDayPlan(d).habitsDone || []).includes(h.id),
+        ).length;
+
+        const pp = allowedDays.length ? done / allowedDays.length : 0;
+        return `<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:13px;">${h.emoji} ${esc(h.name)}</span><span style="font-size:11px;font-family:var(--mono);color:${h.color};">${done}/${allowedDays.length}</span></div>${pbar(pp, h.color)}</div>`;
       })
       .join("")}
   </div>
@@ -707,24 +721,10 @@ function vAnnual() {
     ye = y === thisYear ? new Date() : new Date(y, 11, 31);
   const totalDays = Math.floor((ye - ys) / 864e5) + 1;
   const allDays = Array.from({ length: totalDays }, (_, i) => addDays(ys, i)),
-    allPlans = allDays.map((d) => getDayPlan(d));
+    allPlans = allDays.map((d) => S.dayPlans[dk(d)] || emptyPlan(d));
   const totalSteps = allPlans.reduce((s, p) => s + (p.steps || 0), 0);
-  const totalIncome = allPlans.reduce(
-    (s, p) =>
-      s +
-      (p.moneyEntries || [])
-        .filter((e) => e.type === "income")
-        .reduce((a, e) => a + e.amount, 0),
-    0,
-  );
-  const totalExpense = allPlans.reduce(
-    (s, p) =>
-      s +
-      (p.moneyEntries || [])
-        .filter((e) => e.type === "expense")
-        .reduce((a, e) => a + e.amount, 0),
-    0,
-  );
+  const totalIncome = allPlans.reduce((s, p) => s + sumMoney(p, "income"), 0);
+  const totalExpense = allPlans.reduce((s, p) => s + sumMoney(p, "expense"), 0);
   const daysLogged = allPlans.filter((p) => S.dayPlans[p.id]).length;
   const habitsCompleted = allPlans.reduce((s, p) => s + p.habitsDone.length, 0);
   const moodDays = allPlans.filter((p) => p.mood != null);
@@ -739,9 +739,7 @@ function vAnnual() {
         : b,
     { name: "—", val: 0 },
   );
-  const heatDays = Array.from({ length: 365 }, (_, i) =>
-    addDays(new Date(y, 0, 1), i),
-  );
+  const heatDays = allDays;
   const heatWeeks = [];
   for (let i = 0; i < heatDays.length; i += 7)
     heatWeeks.push(heatDays.slice(i, i + 7));
@@ -754,22 +752,9 @@ function vAnnual() {
     return {
       name: MONTHS_S[mi],
       steps: mPlans.reduce((s, p) => s + (p.steps || 0), 0),
-      income: mPlans.reduce(
-        (s, p) =>
-          s +
-          (p.moneyEntries || [])
-            .filter((e) => e.type === "income")
-            .reduce((a, e) => a + e.amount, 0),
-        0,
-      ),
-      expense: mPlans.reduce(
-        (s, p) =>
-          s +
-          (p.moneyEntries || [])
-            .filter((e) => e.type === "expense")
-            .reduce((a, e) => a + e.amount, 0),
-        0,
-      ),
+      income: mPlans.reduce((s, p) => s + sumMoney(p, "income"), 0),
+
+      expense: mPlans.reduce((s, p) => s + sumMoney(p, "expense"), 0),
       habits: mPlans.reduce((s, p) => s + p.habitsDone.length, 0),
       moodDays: mPlans.filter((p) => p.mood != null),
     };
@@ -779,12 +764,18 @@ function vAnnual() {
     maxExpense = Math.max(...monthData.map((m) => m.expense), 1);
   const ranked = S.habits
     .map((h) => {
-      const done = allDays.filter((d) =>
+      const allowedDays = allDays.filter((d) => habitAllowedOnDate(h, d));
+
+      const done = allowedDays.filter((d) =>
         (getDayPlan(d).habitsDone || []).includes(h.id),
       ).length;
-      return { h, done, pct: done / Math.max(totalDays, 1) };
+
+      const pct = allowedDays.length ? done / allowedDays.length : 0;
+
+      return { h, done, pct };
     })
     .sort((a, b) => b.done - a.done);
+
   function actColor(plan) {
     const intensity =
       S.habits.length > 0 ? plan.habitsDone.length / S.habits.length : 0;
@@ -898,14 +889,7 @@ function vInsights() {
   const taskRate = allT > 0 ? doneT / allT : 0,
     moodDays = p30.flatMap((p) => (p.mood != null ? [p.mood] : [])),
     moodRate = moodDays.length / 30;
-  const spend = p30.reduce(
-    (s, p) =>
-      s +
-      (p.moneyEntries || [])
-        .filter((e) => e.type === "expense")
-        .reduce((a, e) => a + e.amount, 0),
-    0,
-  );
+  const spend = p30.reduce((s, p) => s + sumMoney(p, "expense"), 0);
   const totalSteps30 = p30.reduce((s, p) => s + (p.steps || 0), 0),
     stepsGoalDays = p30.filter((p) => (p.steps || 0) >= STEPS_GOAL).length;
   const insights = [];
@@ -1018,10 +1002,15 @@ function vInsights() {
     .map((d) => getDayPlan(d).mood);
   const ranked = S.habits
     .map((h) => {
-      const d = l30.filter((day) =>
-        (getDayPlan(day).habitsDone || []).includes(h.id),
+      const allowedDays = l30.filter((d) => habitAllowedOnDate(h, d));
+
+      const done = allowedDays.filter((d) =>
+        (getDayPlan(d).habitsDone || []).includes(h.id),
       ).length;
-      return { h, d, pct: d / 30 };
+
+      const pct = allowedDays.length ? done / allowedDays.length : 0;
+
+      return { h, d: done, pct };
     })
     .sort((a, b) => b.d - a.d);
 
@@ -1043,13 +1032,40 @@ ${insights.map((ins) => `<div class="ins-card" style="border:1px solid ${iC[ins.
 <div class="card-pair">
   <div class="card">
     <span class="slabel">Mood — Last 30 Days</span>
-    <div style="display:flex;align-items:flex-end;gap:3px;height:60px;">${moodHist.map((m) => `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;"><div style="background:${m != null ? MOODS[m]?.color || C.muted : C.muted + "20"};border-radius:3px;height:${m != null ? `${(m + 1) * 10 + 6}px` : "4px"};"></div></div>`).join("")}</div>
-    <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">${MOODS.map((m) => `<div style="display:flex;align-items:center;gap:4px;"><div style="width:8px;height:8px;border-radius:99px;background:${m.color};"></div><span style="font-size:8px;font-family:var(--mono);color:${C.muted};">${m.label}</span></div>`).join("")}</div>
+
+    <div style="display:flex;align-items:flex-end;gap:3px;height:60px;">
+      ${moodHist
+        .map((m) => {
+          const safe = Number.isInteger(m) && m >= 0 && m < MOODS.length;
+
+          return `
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;">
+          <div style="
+            background:${safe ? MOODS[m].color : C.muted + "20"};
+            border-radius:3px;
+            height:${safe ? `${(m + 1) * 12}px` : "4px"};
+          "></div>
+        </div>`;
+        })
+        .join("")}
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+      ${MOODS.map(
+        (m) => `
+        <div style="display:flex;align-items:center;gap:4px;">
+          <div style="width:8px;height:8px;border-radius:99px;background:${m.color};"></div>
+          <span style="font-size:8px;font-family:var(--mono);color:${C.muted};">${m.label}</span>
+        </div>
+      `,
+      ).join("")}
+    </div>
   </div>
+
   <div class="card">
     <span class="slabel">Habit Leaderboard — 30 Days</span>
     ${ranked.length === 0 ? `<div style="font-size:12px;font-family:var(--mono);color:${C.muted};">No habits yet</div>` : ""}
-    ${ranked.map(({ h, d, pct }, i) => `<div style="margin-bottom:12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:12px;font-family:var(--mono);color:${C.muted};width:20px;">#${i + 1}</span><span>${h.emoji}</span><span style="flex:1;font-size:13px;">${esc(h.name)}</span><span style="font-size:11px;font-family:var(--mono);color:${h.color};">${d}/30</span></div>${pbar(pct, h.color)}</div>`).join("")}
+    ${ranked.map(({ h, d, pct }, i) => `<div style="margin-bottom:12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:12px;font-family:var(--mono);color:${C.muted};width:20px;">#${i + 1}</span><span>${h.emoji}</span><span style="flex:1;font-size:13px;">${esc(h.name)}</span><span style="font-size:11px;font-family:var(--mono);color:${h.color};">${d}/${l30.filter((d) => habitAllowedOnDate(h, d)).length}</span></div>${pbar(pct, h.color)}</div>`).join("")}
   </div>
 </div>`;
 }
@@ -1231,14 +1247,10 @@ function setSteps(n) {
   renderContent();
 }
 function saveNote(v) {
-  const p = getDayPlan(S.selDate);
-  p.notes = v;
-  saveDayPlan(p);
+  patchDay(S.selDate, { notes: v });
 }
 function saveExercise(v) {
-  const p = getDayPlan(S.selDate);
-  p.exerciseNote = v;
-  saveDayPlan(p);
+  patchDay(S.selDate, { exerciseNote: v });
 }
 function toggleCL(field, id) {
   const p = getDayPlan(S.selDate);
@@ -1326,28 +1338,82 @@ function deleteMoney(id) {
   saveDayPlan(p);
   renderContent();
 }
+
 function toggleHabitDay(habitId) {
-  const d = S.selDate,
-    p = getDayPlan(d);
-  const was = p.habitsDone.includes(habitId);
+  const d = S.selDate;
+  const p = getDayPlan(d);
+
+  const h = S.habits.find((x) => x.id === habitId);
+  if (!h) return;
+  if (!habitAllowedOnDate(h, d)) return;
+
+  const was = (p.habitsDone || []).includes(habitId);
+
   p.habitsDone = was
     ? p.habitsDone.filter((i) => i !== habitId)
-    : [...p.habitsDone, habitId];
+    : [...(p.habitsDone || []), habitId];
+
   saveDayPlan(p);
+
   S.habits = S.habits.map((h) => {
     if (h.id !== habitId) return h;
-    const ns = was
-      ? Math.max(0, (h.currentStreak || 1) - 1)
-      : (h.currentStreak || 0) + 1;
+
+    const newStreak = calcHabitStreak(habitId);
+
     return {
       ...h,
-      currentStreak: ns,
-      longestStreak: Math.max(h.longestStreak || 0, ns),
+      currentStreak: newStreak,
+      longestStreak: Math.max(h.longestStreak || 0, newStreak),
     };
   });
+
   saveHabits();
   renderContent();
 }
+
+function habitAllowedOnDate(habit, date) {
+  const d = new Date(date).getDay();
+
+  if (habit.frequency === "Daily") return true;
+  if (habit.frequency === "Weekdays") return d >= 1 && d <= 5;
+  if (habit.frequency === "Weekends") return d === 0 || d === 6;
+
+  return true;
+}
+
+function calcHabitStreak(habitId) {
+  const habit = S.habits.find((h) => h.id === habitId);
+  if (!habit) return 0;
+
+  let streak = 0;
+  let d = new Date();
+  const limit = new Date(S.profile?.joinDate || 0);
+
+  while (d >= limit) {
+    const p = getDayPlan(d);
+
+    if (!habitAllowedOnDate(habit, d)) {
+      d = addDays(d, -1);
+      continue;
+    }
+
+    if ((p.habitsDone || []).includes(habitId)) {
+      streak++;
+      d = addDays(d, -1);
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+}
+
+function sumMoney(plan, type) {
+  return (plan.moneyEntries || [])
+    .filter((e) => e.type === type)
+    .reduce((a, e) => a + e.amount, 0);
+}
+
 function openHabitModal(id) {
   const h = id ? S.habits.find((x) => x.id === id) : null;
   S._hForm = {
@@ -1385,9 +1451,9 @@ function deleteHabit(id) {
       S.dayPlans[todayKey].habitsDone || []
     ).filter((h) => h !== id);
   }
-
   saveHabits();
   savePlans();
+  recalculateAllStreaks();
   renderContent();
 }
 function submitHabit(editId) {
@@ -1448,13 +1514,19 @@ function importData(input) {
   reader.onload = (e) => {
     try {
       const data = JSON.parse(e.target.result);
-      if (data.dayPlans) Object.assign(S.dayPlans, data.dayPlans);
+      if (data.dayPlans) {
+        S.dayPlans = data.dayPlans;
+        Object.keys(planCache).forEach((k) => delete planCache[k]);
+      }
+      if (data.profile) S.profile = data.profile;
       if (Array.isArray(data.habits)) {
         const ids = new Set(S.habits.map((h) => h.id));
         S.habits = [...S.habits, ...data.habits.filter((h) => !ids.has(h.id))];
       }
+      recalculateAllStreaks();
       savePlans();
       saveHabits();
+      saveProfile();
       input.value = "";
       alert("✅ Import successful!");
       renderContent();
@@ -1476,6 +1548,19 @@ function confirmClear() {
   }
 }
 
+function recalculateAllStreaks() {
+  S.habits = S.habits.map((h) => {
+    const streak = calcHabitStreak(h.id);
+
+    return {
+      ...h,
+      currentStreak: streak,
+      longestStreak: Math.max(h.longestStreak || 0, streak),
+    };
+  });
+
+  saveHabits();
+}
 /* ══════════════════════════════════
    ONBOARD
 ══════════════════════════════════ */
@@ -1518,7 +1603,7 @@ document.addEventListener("keydown", (e) => {
 function setVH() {
   document.documentElement.style.setProperty(
     "--vh",
-    `${window.innerHeight * 0.01}px`
+    `${window.innerHeight * 0.01}px`,
   );
 }
 
@@ -1557,7 +1642,7 @@ if ("serviceWorker" in navigator) {
             newWorker.state === "installed" &&
             navigator.serviceWorker.controller
           ) {
-            console.log("New version available");
+            alert("New version available. Refresh to update.");
           }
         };
       };
