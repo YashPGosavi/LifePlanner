@@ -830,7 +830,7 @@ function buildModal(m) {
   }
   if (m.type === "addHabit" || m.type === "editHabit") {
     const h = m.habit || {}, f = S._hForm;
-    return `<div class="modal-hd"><div class="modal-title">${m.type === "editHabit" ? "Edit Habit" : "New Habit"}</div><button style="font-size:22px;color:${C.muted};" onclick="closeModal()">×</button></div><div class="form-lbl" style="margin-top:0;">NAME & ICON</div><div style="display:flex;gap:8px;margin-bottom:10px;"><input type="text" id="hbEmoji" value="${f.emoji}" style="width:54px;flex-shrink:0;" oninput="S._hForm.emoji=this.value"/><input autofocus type="text" id="hbName" value="${h.name || ""}" placeholder="Habit name" style="flex:1;"/></div><div class="emoji-grid">${HABIT_EMOJIS.map((e) => `<button class="ep-btn" onclick="pickE('${e}')" style="background:${f.emoji === e ? f.color + "30" : "none"};border-color:${f.emoji === e ? f.color : "transparent"};">${e}</button>`).join("")}</div><div class="form-lbl">COLOR</div><div class="color-row">${HABIT_COLORS.map((col) => `<button class="cp-dot" onclick="pickC('${col}')" style="background:${col};border-color:${f.color === col ? "white" : "transparent"};"></button>`).join("")}</div><div class="form-lbl">FREQUENCY</div><div style="display:flex;gap:8px;margin-bottom:18px;">${FREQ.map((fr) => `<button onclick="pickF('${fr}')" style="flex:1;padding:10px 0;border-radius:8px;border:1.5px solid ${f.frequency === fr ? f.color : C.border};background:${f.frequency === fr ? f.color + "20" : "none"};color:${f.frequency === fr ? f.color : C.muted};cursor:pointer;font-size:12px;font-weight:600;">${fr}</button>`).join("")}</div><div style="display:flex;gap:10px;"><button class="btn btn-g" style="flex:1;" onclick="closeModal()">Cancel</button><button class="btn" style="flex:1;background:${f.color};color:#000;" onclick="submitHabit('${h.id || ""}')">${m.type === "editHabit" ? "Save" : "Add"}</button></div>`;
+    return `<div class="modal-hd"><div class="modal-title">${m.type === "editHabit" ? "Edit Habit" : "New Habit"}</div><button style="font-size:22px;color:${C.muted};" onclick="closeModal()">×</button></div><div class="form-lbl" style="margin-top:0;">NAME & ICON</div><div style="display:flex;gap:8px;margin-bottom:10px;"><input type="text" id="hbEmoji" value="${f.emoji}" style="width:54px;flex-shrink:0;" oninput="S._hForm.emoji=this.value"/><input autofocus type="text" id="hbName" value="${esc(S._hForm._name != null ? S._hForm._name : (h ? h.name || '' : ''))}" placeholder="Habit name" style="flex:1;"/></div><div class="emoji-grid">${HABIT_EMOJIS.map((e) => `<button class="ep-btn" onclick="pickE('${e}')" style="background:${f.emoji === e ? f.color + "30" : "none"};border-color:${f.emoji === e ? f.color : "transparent"};">${e}</button>`).join("")}</div><div class="form-lbl">COLOR</div><div class="color-row">${HABIT_COLORS.map((col) => `<button class="cp-dot" onclick="pickC('${col}')" style="background:${col};border-color:${f.color === col ? "white" : "transparent"};"></button>`).join("")}</div><div class="form-lbl">FREQUENCY</div><div style="display:flex;gap:8px;margin-bottom:18px;">${FREQ.map((fr) => `<button onclick="pickF('${fr}')" style="flex:1;padding:10px 0;border-radius:8px;border:1.5px solid ${f.frequency === fr ? f.color : C.border};background:${f.frequency === fr ? f.color + "20" : "none"};color:${f.frequency === fr ? f.color : C.muted};cursor:pointer;font-size:12px;font-weight:600;">${fr}</button>`).join("")}</div><div style="display:flex;gap:10px;"><button class="btn btn-g" style="flex:1;" onclick="closeModal()">Cancel</button><button class="btn" style="flex:1;background:${f.color};color:#000;" onclick="submitHabit('${h.id || ""}')">${m.type === "editHabit" ? "Save" : "Add"}</button></div>`;
   }
   if (m.type === "jumpDate")
     return `<div class="modal-hd"><div class="modal-title">Go to Date</div><button style="font-size:22px;color:${C.muted};" onclick="closeModal()">×</button></div><div class="form-lbl" style="margin-top:0;">SELECT DATE</div><input type="date" id="mJumpDate" value="${dk(S.selDate)}" max="${dk(new Date())}" style="margin-bottom:16px;font-size:15px;"/><div style="display:flex;gap:10px;"><button class="btn btn-g" style="flex:1;" onclick="closeModal()">Cancel</button><button class="btn btn-a" style="flex:1;" onclick="submitJumpDate()">Go</button></div>`;
@@ -980,18 +980,23 @@ function sumMoney(plan, type) {
 }
 function openHabitModal(id) {
   const h = id ? S.habits.find((x) => x.id === id) : null;
-  S._hForm = { emoji: h?.emoji || "✨", color: h?.color || HABIT_COLORS[0], frequency: h?.frequency || "Daily" };
+  S._hForm = { emoji: h?.emoji || "✨", color: h?.color || HABIT_COLORS[0], frequency: h?.frequency || "Daily", _name: h?.name || "" };
   S.modal = { type: id ? "editHabit" : "addHabit", habit: h };
   renderModal();
 }
+function _saveHbName() {
+  const el = document.getElementById("hbName");
+  if (el) S._hForm._name = el.value;
+}
 function pickE(e) {
+  _saveHbName();
   S._hForm.emoji = e;
   const el = document.getElementById("hbEmoji");
   if (el) el.value = e;
   renderModal();
 }
-function pickC(c) { S._hForm.color = c; renderModal(); }
-function pickF(f) { S._hForm.frequency = f; renderModal(); }
+function pickC(c) { _saveHbName(); S._hForm.color = c; renderModal(); }
+function pickF(f) { _saveHbName(); S._hForm.frequency = f; renderModal(); }
 function deleteHabit(id) {
   if (!confirm("Delete this habit?")) return;
   S.habits = S.habits.filter((h) => h.id !== id);
