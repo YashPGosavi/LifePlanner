@@ -87,11 +87,11 @@ const TABS = [
   { id: "profile",  label: "Profile",  icon: SVG_ICONS.profile },
 ];
 const MOODS = [
-  { id: 0, emoji: "😭", label: "Awful", color: "#EF4444" },
-  { id: 1, emoji: "😔", label: "Bad", color: "#F97316" },
-  { id: 2, emoji: "😐", label: "Okay", color: "#EAB308" },
-  { id: 3, emoji: "🙂", label: "Good", color: "#90EE90" },
-  { id: 4, emoji: "😄", label: "Great", color: "#22C55E" },
+  { id: 0, label: "Awful", icon: MOOD_SVG.awful },
+  { id: 1, label: "Bad", icon: MOOD_SVG.bad },
+  { id: 2, label: "Okay", icon: MOOD_SVG.okay },
+  { id: 3, label: "Good", icon: MOOD_SVG.good },
+  { id: 4, label: "Great", icon: MOOD_SVG.great },
 ];
 const WEATHERS = [
   { id: 0, emoji: "☀️", label: "Sunny" },
@@ -194,42 +194,17 @@ function updateFavicon() {
 function cycleTheme() {
   const order = ["system", "light", "dark"];
   S.theme = order[(order.indexOf(S.theme) + 1) % order.length];
-
   saveTheme();
   applyTheme();
   updateFavicon();
-
   const btn = document.getElementById("themeToggle");
-  if (btn) btn.innerHTML = themeIcon();
-  renderContent();
+  if (btn) btn.textContent = themeIcon();
 }
-const THEME_ICONS = {
-  light: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-    <circle cx="12" cy="12" r="4"/>
-    <line x1="12" y1="2" x2="12" y2="5"/>
-    <line x1="12" y1="19" x2="12" y2="22"/>
-    <line x1="2" y1="12" x2="5" y2="12"/>
-    <line x1="19" y1="12" x2="22" y2="12"/>
-    <line x1="4.5" y1="4.5" x2="6.5" y2="6.5"/>
-    <line x1="17.5" y1="17.5" x2="19.5" y2="19.5"/>
-    <line x1="4.5" y1="19.5" x2="6.5" y2="17.5"/>
-    <line x1="17.5" y1="6.5" x2="19.5" y2="4.5"/>
-  </svg>`,
-
-  dark: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-    <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>
-  </svg>`,
-
-  system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-    <rect x="3" y="4" width="18" height="14" rx="2"/>
-    <line x1="8" y1="20" x2="16" y2="20"/>
-  </svg>`
-};
 
 function themeIcon() {
-  if (S.theme === "light") return THEME_ICONS.light;
-  if (S.theme === "dark") return THEME_ICONS.dark;
-  return THEME_ICONS.system;
+  if (S.theme === "light") return "☀️";
+  if (S.theme === "dark") return "🌙";
+  return "💻"; // system
 }
 const getDayPlan = (d) => {
   const k = dk(d);
@@ -309,7 +284,7 @@ function render() {
   }
   // Theme toggle button
   const themeBtn = document.getElementById("themeToggle");
-  if (themeBtn) themeBtn.innerHTML = themeIcon();
+  if (themeBtn) themeBtn.textContent = themeIcon();
 
   document.getElementById("tabs").innerHTML = TABS.map(
     (t) => `<button class="tab-btn${S.tab === t.id ? " active" : ""}" onclick="switchTab('${t.id}')"><span class="ti">${t.icon}</span><span class="tl">${t.label}</span></button>`,
@@ -446,7 +421,7 @@ function vDaily() {
     <div style="display:flex;align-items:center;gap:16px;">
       ${ring(Math.min((p.steps || 0) / STEPS_GOAL, 1), (p.steps || 0) >= STEPS_GOAL ? C.green : C.accent, 72, `<div style="text-align:center;"><div style="font-size:14px;">👟</div><div style="font-size:12px;font-weight:700;font-family:var(--mono);color:${(p.steps || 0) >= STEPS_GOAL ? C.green : C.accent};">${(p.steps || 0) >= 1000 ? ((p.steps || 0) / 1000).toFixed(1) + "k" : p.steps || 0}</div></div>`)}
       <div style="flex:1;">
-        <input type="number" min="0" max="99999" placeholder="Enter steps" value="${p.steps || ""}" style="font-size:20px;font-weight:700;font-family:var(--mono);color:${C.accent};background:none;border:none;border-bottom:1px solid ${C.border};border-radius:0;padding:4px 0;width:100%;" onchange="setSteps(parseInt(this.value)||0)"/>
+        <input type="number" min="0" max="99999" inputmode="numeric" placeholder="Enter steps" value="${p.steps || ""}" style="font-size:20px;font-weight:700;font-family:var(--mono);color:${C.accent};background:none;border:none;border-bottom:1px solid ${C.border};border-radius:0;padding:4px 0;width:100%;" onblur="setSteps(parseInt(this.value)||0)" onkeydown="if(event.key==='Enter'){this.blur();}"/>
         <div class="step-presets">${[2000, 5000, 7500, 10000].map((v) => `<button class="step-preset" onclick="setSteps(${v})" style="color:${(p.steps || 0) >= v ? C.accent : C.muted};border-color:${(p.steps || 0) >= v ? C.accent + "40" : C.border};">${v >= 1000 ? v / 1000 + "k" : v}</button>`).join("")}</div>
       </div>
     </div>
@@ -968,7 +943,7 @@ function buildModal(m) {
     return `<div class="modal-hd"><div class="modal-title">Add Schedule Item</div><button style="font-size:22px;color:${C.muted};" onclick="closeModal()">×</button></div><div class="form-lbl" style="margin-top:0;">TIME</div><input type="time" id="mSchedTime" value="09:00" style="margin-bottom:10px;"/><div class="form-lbl">WHAT</div><input autofocus type="text" id="mSchedText" placeholder="e.g. Team meeting, Gym, Lunch…" onkeydown="if(event.key==='Enter')submitSched()"/><div style="display:flex;gap:10px;margin-top:16px;"><button class="btn btn-g" style="flex:1;" onclick="closeModal()">Cancel</button><button class="btn btn-a" style="flex:1;" onclick="submitSched()">Add</button></div>`;
   if (m.type === "addMoney") {
     const isInc = S._mType === "income";
-    return `<div class="modal-hd"><div class="modal-title">Add Transaction</div><button style="font-size:22px;color:${C.muted};" onclick="closeModal()">×</button></div><div style="display:flex;gap:8px;margin-bottom:14px;"><button onclick="S._mType='expense';renderModal();" style="flex:1;padding:10px 0;border-radius:8px;border:1.5px solid ${!isInc ? C.red : C.border};background:${!isInc ? C.red + "20" : "none"};color:${!isInc ? C.red : C.muted};cursor:pointer;font-weight:600;font-size:13px;">Expense</button><button onclick="S._mType='income';renderModal();" style="flex:1;padding:10px 0;border-radius:8px;border:1.5px solid ${isInc ? C.green : C.border};background:${isInc ? C.green + "20" : "none"};color:${isInc ? C.green : C.muted};cursor:pointer;font-weight:600;font-size:13px;">Income</button></div><input autofocus type="text" id="mMoneyDesc" placeholder="Description" style="margin-bottom:10px;"/><input type="number" id="mMoneyAmt" placeholder="Amount" min="0" step="0.01" style="margin-bottom:10px;"/><input type="text" id="mMoneyCat" placeholder="Category (optional)" style="margin-bottom:16px;"/><div style="display:flex;gap:10px;"><button class="btn btn-g" style="flex:1;" onclick="closeModal()">Cancel</button><button class="btn btn-a" style="flex:1;" onclick="submitMoney()">Add</button></div>`;
+    return `<div class="modal-hd"><div class="modal-title">Add Transaction</div><button style="font-size:22px;color:${C.muted};" onclick="closeModal()">×</button></div><div style="display:flex;gap:8px;margin-bottom:14px;"><button onclick="document.activeElement?.blur();S._mType='expense';renderModal();" style="flex:1;padding:10px 0;border-radius:8px;border:1.5px solid ${!isInc ? C.red : C.border};background:${!isInc ? C.red + "20" : "none"};color:${!isInc ? C.red : C.muted};cursor:pointer;font-weight:600;font-size:13px;">Expense</button><button onclick="document.activeElement?.blur();S._mType='income';renderModal();" style="flex:1;padding:10px 0;border-radius:8px;border:1.5px solid ${isInc ? C.green : C.border};background:${isInc ? C.green + "20" : "none"};color:${isInc ? C.green : C.muted};cursor:pointer;font-weight:600;font-size:13px;">Income</button></div><input autofocus type="text" id="mMoneyDesc" placeholder="Description" style="margin-bottom:10px;"/><input type="number" id="mMoneyAmt" placeholder="Amount" min="0" step="0.01" inputmode="decimal" style="margin-bottom:10px;"/><input type="text" id="mMoneyCat" placeholder="Category (optional)" style="margin-bottom:16px;"/><div style="display:flex;gap:10px;"><button class="btn btn-g" style="flex:1;" onclick="closeModal()">Cancel</button><button class="btn btn-a" style="flex:1;" onclick="submitMoney()">Add</button></div>`;
   }
   if (m.type === "addHabit" || m.type === "editHabit") {
     const h = m.habit || {}, f = S._hForm;
@@ -1021,7 +996,13 @@ function setWater(n) {
   patchDay(S.selDate, { waterGlasses: p.waterGlasses === n ? n - 1 : n });
   renderContent();
 }
-function setSteps(n) { patchDay(S.selDate, { steps: Math.max(0, n) }); renderContent(); }
+function setSteps(n) {
+  patchDay(S.selDate, { steps: Math.max(0, n) });
+  // Do not call renderContent() here — the steps input is still focused on
+  // Android after onchange fires, and rebuilding innerHTML closes the keyboard.
+  // A full render will happen when the user taps elsewhere (blur → no keyboard).
+}
+// saveNote/saveExercise: persist only, no render — textarea keeps focus
 function saveNote(v) { patchDay(S.selDate, { notes: v }); }
 function saveExercise(v) { patchDay(S.selDate, { exerciseNote: v }); }
 function toggleCL(field, id) {
@@ -1131,14 +1112,15 @@ function _saveHbName() {
   if (el) S._hForm._name = el.value;
 }
 function pickE(e) {
+  document.activeElement?.blur();
   _saveHbName();
   S._hForm.emoji = e;
   const el = document.getElementById("hbEmoji");
   if (el) el.value = e;
   renderModal();
 }
-function pickC(c) { _saveHbName(); S._hForm.color = c; renderModal(); }
-function pickF(f) { _saveHbName(); S._hForm.frequency = f; renderModal(); }
+function pickC(c) { document.activeElement?.blur(); _saveHbName(); S._hForm.color = c; renderModal(); }
+function pickF(f) { document.activeElement?.blur(); _saveHbName(); S._hForm.frequency = f; renderModal(); }
 function deleteHabit(id) {
   if (!confirm("Delete this habit?")) return;
   S.habits = S.habits.filter((h) => h.id !== id);
@@ -1252,10 +1234,36 @@ applyTheme(); // Apply saved theme immediately to avoid flash
 updateFavicon(); // Set correct favicon before first paint
 
 let resizeTimeout;
+function isKeyboardOpen() {
+  // Focused input/textarea means software keyboard is open
+  const tag = document.activeElement?.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA") return true;
+  // visualViewport API: keyboard open shrinks viewport significantly
+  if (window.visualViewport) {
+    return window.visualViewport.height < window.innerHeight * 0.75;
+  }
+  return false;
+}
+
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => { setVH(); render(); }, 150);
+  resizeTimeout = setTimeout(() => {
+    setVH();
+    // Never re-render while the software keyboard is open —
+    // doing so destroys the focused input which closes the keyboard,
+    // which triggers another resize, creating an infinite flicker loop.
+    if (!isKeyboardOpen()) render();
+  }, 200);
 });
+
+// Use visualViewport resize instead of window resize when available —
+// it fires only for layout changes, NOT for keyboard show/hide on Android.
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => { setVH(); }, 100);
+  });
+}
 
 render();
 
