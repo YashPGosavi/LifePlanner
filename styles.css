@@ -1203,9 +1203,9 @@ button {
 
   /* Habits also pair up on large screens */
   
-  /* .habits-grid {
+  .habits-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
-  } */
+  }
 }
