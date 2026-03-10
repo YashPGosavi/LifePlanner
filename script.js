@@ -87,11 +87,11 @@ const TABS = [
   { id: "profile",  label: "Profile",  icon: SVG_ICONS.profile },
 ];
 const MOODS = [
-  { id: 0, label: "Awful", icon: MOOD_SVG.awful },
-  { id: 1, label: "Bad", icon: MOOD_SVG.bad },
-  { id: 2, label: "Okay", icon: MOOD_SVG.okay },
-  { id: 3, label: "Good", icon: MOOD_SVG.good },
-  { id: 4, label: "Great", icon: MOOD_SVG.great },
+  { id: 0, emoji: "😭", label: "Awful", color: "#EF4444" },
+  { id: 1, emoji: "😔", label: "Bad", color: "#F97316" },
+  { id: 2, emoji: "😐", label: "Okay", color: "#EAB308" },
+  { id: 3, emoji: "🙂", label: "Good", color: "#90EE90" },
+  { id: 4, emoji: "😄", label: "Great", color: "#22C55E" },
 ];
 const WEATHERS = [
   { id: 0, emoji: "☀️", label: "Sunny" },
@@ -194,17 +194,42 @@ function updateFavicon() {
 function cycleTheme() {
   const order = ["system", "light", "dark"];
   S.theme = order[(order.indexOf(S.theme) + 1) % order.length];
+
   saveTheme();
   applyTheme();
   updateFavicon();
+
   const btn = document.getElementById("themeToggle");
-  if (btn) btn.textContent = themeIcon();
+  if (btn) btn.innerHTML = themeIcon();
+  renderContent();
 }
+const THEME_ICONS = {
+  light: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <circle cx="12" cy="12" r="4"/>
+    <line x1="12" y1="2" x2="12" y2="5"/>
+    <line x1="12" y1="19" x2="12" y2="22"/>
+    <line x1="2" y1="12" x2="5" y2="12"/>
+    <line x1="19" y1="12" x2="22" y2="12"/>
+    <line x1="4.5" y1="4.5" x2="6.5" y2="6.5"/>
+    <line x1="17.5" y1="17.5" x2="19.5" y2="19.5"/>
+    <line x1="4.5" y1="19.5" x2="6.5" y2="17.5"/>
+    <line x1="17.5" y1="6.5" x2="19.5" y2="4.5"/>
+  </svg>`,
+
+  dark: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>
+  </svg>`,
+
+  system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <rect x="3" y="4" width="18" height="14" rx="2"/>
+    <line x1="8" y1="20" x2="16" y2="20"/>
+  </svg>`
+};
 
 function themeIcon() {
-  if (S.theme === "light") return "☀️";
-  if (S.theme === "dark") return "🌙";
-  return "💻"; // system
+  if (S.theme === "light") return THEME_ICONS.light;
+  if (S.theme === "dark") return THEME_ICONS.dark;
+  return THEME_ICONS.system;
 }
 const getDayPlan = (d) => {
   const k = dk(d);
@@ -284,7 +309,7 @@ function render() {
   }
   // Theme toggle button
   const themeBtn = document.getElementById("themeToggle");
-  if (themeBtn) themeBtn.textContent = themeIcon();
+  if (themeBtn) themeBtn.innerHTML = themeIcon();
 
   document.getElementById("tabs").innerHTML = TABS.map(
     (t) => `<button class="tab-btn${S.tab === t.id ? " active" : ""}" onclick="switchTab('${t.id}')"><span class="ti">${t.icon}</span><span class="tl">${t.label}</span></button>`,
@@ -1262,7 +1287,7 @@ if (window.visualViewport) {
   window.visualViewport.addEventListener("resize", () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => { setVH(); }, 100);
-  });
+});
 }
 
 render();
