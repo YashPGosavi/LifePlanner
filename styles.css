@@ -63,14 +63,13 @@ select {
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 9px 12px;
+  padding: 6px 10px;
   width: 100%;
   outline: none;
   transition: border 0.15s;
   caret-color: var(--accent);
-  font-size:16px;
-  transform:scale(.85);
-  transform-origin:left top;
+
+  font-size: 16px;
 }
 
 input:focus,
@@ -1203,9 +1202,10 @@ button {
   }
 
   /* Habits also pair up on large screens */
-  .habits-grid {
+  
+  /* .habits-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
-  }
+  } */
 }
