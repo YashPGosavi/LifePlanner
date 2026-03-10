@@ -10,10 +10,12 @@
 }
 
 html {
-  -webkit-text-size-adjust:100%;
+  /* ZOOM FIX: prevent iOS/Android zoom on input focus */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   touch-action: manipulation;
-  width:100%;
-  overflow:hidden;
+  width: 100%;
+  overflow: hidden;
 }
 
 :root {
@@ -42,7 +44,7 @@ html {
 }
 
 body {
-  padding-top: var(--safe-top);
+  /* safe-top handled by #header to avoid double padding */
 }
 
 html,
@@ -53,8 +55,11 @@ body {
   font-family: var(--sans);
   overflow: hidden;
   overscroll-behavior: none;
+  /* Perf: promote to GPU layer */
+  -webkit-font-smoothing: antialiased;
 }
 
+/* ── ZOOM FIX: inputs must be 16px+ to prevent mobile browser zoom ── */
 input,
 textarea,
 select {
@@ -64,11 +69,17 @@ select {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 9px 12px;
-  font-size: 13px;
+  /* CRITICAL: 16px prevents iOS/Android zoom on focus */
+  font-size: 16px;
   width: 100%;
   outline: none;
   transition: border 0.15s;
   caret-color: var(--accent);
+  /* Prevent zoom on double-tap */
+  touch-action: manipulation;
+  /* Prevent iOS from rounding input corners */
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 input:focus,
@@ -90,6 +101,11 @@ select option {
   background: var(--surface);
 }
 
+/* Override for number inputs (steps) — keep visual size but still 16px underneath */
+input[type="number"] {
+  font-size: 16px;
+}
+
 ::-webkit-scrollbar {
   width: 3px;
   height: 3px;
@@ -105,11 +121,13 @@ select option {
 }
 
 /* ── Layout ── */
-#app{
-  display:flex;
-  flex-direction:column;
-  height:100dvh;
-  height:calc(var(--vh,1vh)*100);
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  height: calc(var(--vh, 1vh) * 100);
+  /* GPU layer for smooth transitions */
+  will-change: transform;
 }
 
 #header {
@@ -186,6 +204,8 @@ select option {
   background: none;
   border: none;
   cursor: pointer;
+  /* Perf: no lag on tap */
+  touch-action: manipulation;
 }
 
 .tab-btn .ti {
@@ -228,10 +248,13 @@ select option {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  /* Perf: GPU-accelerated scrolling */
+  transform: translateZ(0);
+  will-change: scroll-position;
 }
 
 .page {
-  padding: 16px 14px calc(32px + var(--safe-bottom)) 14px;
+  padding: 16px 14px calc(32px + var(--safe-bot)) 14px;
   max-width: 1100px;
   margin: 0 auto;
   animation: fadein 0.18s ease;
@@ -242,7 +265,6 @@ select option {
     opacity: 0;
     transform: translateY(4px);
   }
-
   to {
     opacity: 1;
     transform: none;
@@ -256,9 +278,12 @@ select option {
   border-radius: 16px;
   padding: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  /* Prevent content overflow */
+  overflow: hidden;
+  /* Perf */
+  contain: layout style;
 }
 
-/* Single col wrapper — default */
 .card-col {
   display: flex;
   flex-direction: column;
@@ -266,7 +291,6 @@ select option {
   margin-bottom: 14px;
 }
 
-/* Pair: two cards side by side on md+ */
 .card-pair {
   display: grid;
   grid-template-columns: 1fr;
@@ -274,7 +298,6 @@ select option {
   margin-bottom: 14px;
 }
 
-/* Full-width solo card with bottom margin */
 .card-solo {
   margin-bottom: 14px;
 }
@@ -290,7 +313,6 @@ select option {
 }
 
 /* ── Buttons ── */
-
 button {
   cursor: pointer;
   border: none;
@@ -311,6 +333,7 @@ button {
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
+  touch-action: manipulation;
 }
 
 .btn:active {
@@ -342,6 +365,7 @@ button {
   align-items: center;
   font-size: 14px;
   transition: color 0.15s;
+  touch-action: manipulation;
 }
 
 .icon-btn:hover {
@@ -373,7 +397,6 @@ button {
   margin-bottom: 6px;
 }
 
-/* Stat grids */
 .sg2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -409,6 +432,7 @@ button {
   color: var(--text);
   flex-shrink: 0;
   transition: background 0.15s;
+  touch-action: manipulation;
 }
 
 .nav-arrow:active {
@@ -426,6 +450,7 @@ button {
   cursor: pointer;
   font-family: var(--mono);
   white-space: nowrap;
+  touch-action: manipulation;
 }
 
 /* ── Mood ── */
@@ -442,6 +467,7 @@ button {
   padding: 10px 4px;
   cursor: pointer;
   transition: all 0.2s;
+  touch-action: manipulation;
 }
 
 .mood-btn div:first-child {
@@ -484,6 +510,8 @@ button {
 .sched-text {
   flex: 1;
   font-size: 13px;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .sched-del {
@@ -495,6 +523,7 @@ button {
   border: none;
   flex-shrink: 0;
   transition: color 0.15s;
+  touch-action: manipulation;
 }
 
 .sched-del:hover {
@@ -528,6 +557,7 @@ button {
   font-weight: 900;
   flex-shrink: 0;
   transition: all 0.2s;
+  touch-action: manipulation;
 }
 
 /* ── Habit cards ── */
@@ -537,6 +567,12 @@ button {
   border-radius: 16px;
   padding: 16px;
   transition: border-color 0.2s;
+  /* Prevent overflow */
+  overflow: hidden;
+  contain: layout style;
+  /* Word wrap for long names */
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .hb-emoji-wrap {
@@ -592,26 +628,17 @@ button {
   overflow-x: auto;
   padding-bottom: 4px;
   scrollbar-width: none;
+  /* GPU scroll */
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
 }
 
 .wk-cols::-webkit-scrollbar {
   display: none;
 }
 
-.wk-col{
-flex:0 0 90px;
-min-height:160px;
-}
-
-.wk-cols{
-display:flex;
-gap:8px;
-overflow-x:auto;
-max-width:100%;
-}
-
 .wk-col {
-  flex-shrink: 0;
+  flex: 0 0 90px;
   width: 100px;
   min-height: 160px;
   background: var(--surface);
@@ -624,6 +651,7 @@ max-width:100%;
   gap: 5px;
   cursor: pointer;
   transition: border-color 0.15s;
+  touch-action: manipulation;
 }
 
 .wk-col:hover {
@@ -660,6 +688,7 @@ max-width:100%;
   align-items: center;
   gap: 2px;
   padding: 4px 2px;
+  touch-action: manipulation;
 }
 
 .cal-num {
@@ -678,6 +707,8 @@ max-width:100%;
   overflow-x: auto;
   padding-bottom: 8px;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
 }
 
 .annual-hm::-webkit-scrollbar {
@@ -767,6 +798,7 @@ max-width:100%;
   cursor: pointer;
   filter: grayscale(1) opacity(0.25);
   transition: all 0.2s;
+  touch-action: manipulation;
 }
 
 .water-cup.filled {
@@ -793,12 +825,13 @@ max-width:100%;
   color: var(--muted);
   font-weight: 600;
   text-align: center;
+  touch-action: manipulation;
 }
 
 /* ── Money ── */
 .money-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   padding: 7px 0;
   border-bottom: 1px solid rgba(42, 42, 50, 0.4);
@@ -848,8 +881,10 @@ max-width:100%;
 .stat-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 11px 0;
   border-bottom: 1px solid rgba(42, 42, 50, 0.4);
+  gap: 8px;
 }
 
 .stat-row:last-child {
@@ -915,6 +950,7 @@ max-width:100%;
   font-size: 20px;
   cursor: pointer;
   transition: all 0.15s;
+  touch-action: manipulation;
 }
 
 .color-row {
@@ -930,6 +966,7 @@ max-width:100%;
   border-radius: 99px;
   border: 2px solid transparent;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 /* ── Onboard ── */
@@ -976,7 +1013,7 @@ max-width:100%;
 }
 
 .ob-input {
-  font-size: 15px;
+  font-size: 16px; /* ZOOM FIX */
   padding: 12px 14px;
   text-align: center;
   margin-bottom: 16px;
@@ -992,6 +1029,7 @@ max-width:100%;
   width: 100%;
   cursor: pointer;
   border: none;
+  touch-action: manipulation;
 }
 
 .ob-btn:disabled {
@@ -1179,7 +1217,13 @@ max-width:100%;
     padding: 24px 28px calc(32px + var(--safe-bot));
   }
 
-  /* Cards pair up side by side */
+  /* On desktop, restore readable font size for inputs */
+  input,
+  textarea,
+  select {
+    font-size: 13px;
+  }
+
   .card-pair {
     grid-template-columns: 1fr 1fr;
   }
@@ -1212,7 +1256,6 @@ max-width:100%;
     grid-template-columns: repeat(4, 1fr);
   }
 
-  /* Habits also pair up on large screens */
   .habits-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
