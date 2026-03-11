@@ -9,6 +9,15 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+* {
+  touch-action: manipulation;
+}
+
+html,
+body {
+  touch-action: manipulation;
+}
+
 html {
   /* ZOOM FIX: prevent iOS/Android zoom on input focus */
   -webkit-text-size-adjust: 100%;
@@ -159,7 +168,7 @@ select option {
 
 /* Override for number inputs (steps) — keep visual size but still 16px underneath */
 input[type="number"] {
-  font-size: 16px;
+  font-size: 16px !important;
 }
 
 ::-webkit-scrollbar {
@@ -188,7 +197,8 @@ input[type="number"] {
 
 #header {
   padding: calc(10px + var(--safe-top)) 16px 10px 16px;
-  background: var(--bg); /* fallback */
+  background: var(--bg);
+  /* fallback */
   background: color-mix(in srgb, var(--bg) 95%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -273,12 +283,14 @@ input[type="number"] {
   justify-content: center;
   flex-shrink: 0;
 }
+
 .tab-btn .ti svg {
   width: 22px;
   height: 22px;
   color: var(--muted);
   transition: color 0.2s;
 }
+
 .tab-btn.active .ti svg {
   color: var(--accent);
 }
@@ -336,6 +348,7 @@ input[type="number"] {
     opacity: 0;
     transform: translateY(4px);
   }
+
   to {
     opacity: 1;
     transform: none;
@@ -1100,7 +1113,7 @@ button {
 }
 
 .ob-input {
-  font-size: 16px; /* ZOOM FIX */
+  font-size: 16px;
   padding: 12px 14px;
   text-align: center;
   margin-bottom: 16px;
@@ -1202,14 +1215,25 @@ button {
   transition: background 0.15s, border-color 0.15s;
   flex-shrink: 0;
 }
+
 .theme-toggle:active {
   transform: scale(0.92);
 }
 
 /* Smooth transitions on theme-sensitive elements */
-.card, .hb-card, #header, .modal-sheet, .tab-btn,
-input, textarea, select, .stat-tile, .wk-col,
-.ann-month-card, .ins-card, .sched-badge {
+.card,
+.hb-card,
+#header,
+.modal-sheet,
+.tab-btn,
+input,
+textarea,
+select,
+.stat-tile,
+.wk-col,
+.ann-month-card,
+.ins-card,
+.sched-badge {
   transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
@@ -1217,6 +1241,7 @@ input, textarea, select, .stat-tile, .wk-col,
 [data-theme="light"] #header {
   background: rgba(244, 244, 248, 0.95);
 }
+
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) #header {
     background: rgba(244, 244, 248, 0.95);
@@ -1292,6 +1317,7 @@ input, textarea, select, .stat-tile, .wk-col,
     height: 24px;
     flex-shrink: 0;
   }
+
   .tab-btn .ti svg {
     width: 24px;
     height: 24px;
@@ -1351,7 +1377,7 @@ input, textarea, select, .stat-tile, .wk-col,
   input,
   textarea,
   select {
-    font-size: 13px;
+    font-size: 16px;
   }
 
   .card-pair {
@@ -1395,8 +1421,13 @@ input, textarea, select, .stat-tile, .wk-col,
 
 /* Tell browser which app icon to use based on theme */
 @media (prefers-color-scheme: dark) {
-  link[rel="icon"] { content: url(appIcon-dark.png); }
+  link[rel="icon"] {
+    content: url(appIcon-dark.png);
+  }
 }
+
 @media (prefers-color-scheme: light) {
-  link[rel="icon"] { content: url(appIcon-light.png); }
+  link[rel="icon"] {
+    content: url(appIcon-light.png);
+  }
 }

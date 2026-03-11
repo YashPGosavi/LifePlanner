@@ -1,4 +1,4 @@
-const CACHE_NAME = "life-planner-v3";
+const CACHE_NAME = "life-planner-v4";
 
 const CORE_ASSETS = [
   "./",
@@ -6,98 +6,101 @@ const CORE_ASSETS = [
   "./styles.css",
   "./script.js",
   "./manifest.json",
-  // Dark theme icons (default)
   "./appIcon-dark.png",
- 
-  // Light theme icons
-  "./appIcon-light.png",
+  "./appIcon-light.png"
 ];
 
-// ── Install: pre-cache all core assets ───────────────────────────────────────
+
+// ── Install: cache core assets ─────────────────────────
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(CORE_ASSETS))
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.all(
+        CORE_ASSETS.map(asset =>
+          cache.add(asset).catch(() => {
+            console.warn("Failed to cache:", asset);
+          })
+        )
+      )
+    )
   );
-  // Take control immediately without waiting for old SW to expire
+
   self.skipWaiting();
 });
 
-// ── Activate: delete stale caches from previous versions ─────────────────────
+
+// ── Activate: remove old caches ────────────────────────
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(k => k !== CACHE_NAME)
-          .map(k => caches.delete(k))
+          .filter(key => key !== CACHE_NAME)
+          .map(key => caches.delete(key))
       )
     )
   );
-  // Claim all open clients so new SW is active immediately
+
   self.clients.claim();
 });
 
-// ── Fetch: cache-first for assets, network-first for navigation ───────────────
+
+// ── Fetch strategy ─────────────────────────────────────
 self.addEventListener("fetch", event => {
-  const { request } = event;
+
+  const request = event.request;
   const url = new URL(request.url);
 
   // Only handle same-origin requests
   if (url.origin !== location.origin) return;
 
+
+  // ── Navigation → Network First (keeps app fresh)
   if (request.mode === "navigate") {
-    // Navigation: network-first so app shell is always fresh
+
     event.respondWith(
       fetch(request)
-        .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put(request, clone));
-          return res;
+        .then(response => {
+
+          const clone = response.clone();
+
+          caches.open(CACHE_NAME)
+            .then(cache => cache.put("./index.html", clone));
+
+          return response;
+
         })
         .catch(() => caches.match("./index.html"))
     );
-  } else {
-    // Assets: cache-first, update cache in background
-    event.respondWith(
-      caches.match(request).then(cached => {
-        const fetchPromise = fetch(request).then(res => {
-          if (res.ok) {
-            const clone = res.clone();
-            caches.open(CACHE_NAME).then(c => c.put(request, clone));
-          }
-          return res;
-        });
-        return cached || fetchPromise;
-      })
-    );
+
+    return;
   }
-});
 
-// ── Push notifications ────────────────────────────────────────────────────────
-self.addEventListener("push", event => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || "Life Planner";
-  const options = {
-    body:    data.body  || "Reminder",
-    icon:    "appIcon-dark.png",
-    badge:   "appIcon-dark.png",
-    data:    data.url ? { url: data.url } : {},
-  };
-  event.waitUntil(self.registration.showNotification(title, options));
-});
 
-// ── Notification click: open / focus the app ─────────────────────────────────
-self.addEventListener("notificationclick", event => {
-  event.notification.close();
-  const target = event.notification.data?.url || "./";
-  event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
-      for (const client of list) {
-        if (client.url.includes(location.origin) && "focus" in client) {
-          return client.focus();
-        }
-      }
-      return clients.openWindow(target);
-    })
+  // ── Assets → Cache First
+  event.respondWith(
+
+    caches.match(request)
+      .then(cached => {
+
+        if (cached) return cached;
+
+        return fetch(request)
+          .then(response => {
+
+            if (!response || response.status !== 200) return response;
+
+            const clone = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then(cache => cache.put(request, clone));
+
+            return response;
+
+          });
+
+      })
+
   );
+
 });

@@ -1,94 +1,90 @@
 <!doctype html>
 
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
 
-    <!-- iPhone / mobile viewport -->
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
+<head>
+  <meta charset="UTF-8" />
 
-    <!-- iOS web app support -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-    <meta name="apple-mobile-web-app-title" content="Life Planner" />
+  <!-- iPhone / mobile viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 
-    <!-- Theme color — swapped dynamically by JS on every theme change -->
-    <meta name="theme-color" id="themeColorMeta" content="#0e0e10" />
+  <!-- iOS web app support -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Life Planner" />
 
-    <title>Life Planner</title>
+  <!-- Theme color — swapped dynamically by JS on every theme change -->
+  <meta name="theme-color" id="themeColorMeta" content="#0e0e10" />
 
-    <!-- Favicon — JS swaps between favicon-dark.png / favicon-light.png -->
-    <link rel="icon" id="faviconLink" href="appIcon-dark.png" type="image/png" sizes="32x32" />
+  <title>Life Planner</title>
 
-    <!-- Passive system-preference hints (browsers that support media on <link>) -->
-    <link rel="icon" href="appIcon-dark.png"  type="image/png" media="(prefers-color-scheme: dark)" />
-    <link rel="icon" href="appIcon-light.png" type="image/png" media="(prefers-color-scheme: light)" />
+  <!-- Favicon — JS swaps between favicon-dark.png / favicon-light.png -->
+  <link rel="icon" id="faviconLink" href="appIcon-dark.png" type="image/png" sizes="32x32" />
 
-    <!-- iOS apple-touch-icon — JS swaps between appIcon-dark.png / appIcon-light.png.
+  <!-- Passive system-preference hints (browsers that support media on <link>) -->
+  <link rel="icon" href="appIcon-dark.png" type="image/png" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="appIcon-light.png" type="image/png" media="(prefers-color-scheme: light)" />
+
+  <!-- iOS apple-touch-icon — JS swaps between appIcon-dark.png / appIcon-light.png.
          iOS ignores manifest.json icons entirely — only these <link> tags work. -->
-    <link rel="apple-touch-icon" id="touchIcon"    href="appIcon-dark.png" />
-    <link rel="apple-touch-icon" id="touchIcon180" href="appIcon-dark.png" sizes="180x180" />
+  <link rel="apple-touch-icon" id="touchIcon" href="appIcon-dark.png" />
+  <link rel="apple-touch-icon" id="touchIcon180" href="appIcon-dark.png" sizes="180x180" />
 
-    <!-- Windows tile -->
-    <meta name="msapplication-TileColor" content="#0e0e10" />
-    <meta name="msapplication-TileImage" content="appIcon-dark.png" />
+  <!-- Windows tile -->
+  <meta name="msapplication-TileColor" content="#0e0e10" />
+  <meta name="msapplication-TileImage" content="appIcon-dark.png" />
 
-    <!-- Manifest (Android PWA install) -->
-    <link rel="manifest" href="manifest.json" />
+  <!-- Manifest (Android PWA install) -->
+  <link rel="manifest" href="manifest.json" />
 
-    <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css" />
 
-    <!-- ⚡ Inline theme bootstrap — runs before <body> to prevent flash of wrong theme -->
-    <script>
-      (function () {
-        var saved = null;
-        try { saved = JSON.parse(localStorage.getItem("lp_theme")); } catch (e) {}
-        var theme = saved || "system";
-        var effective = theme === "system"
-          ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
-          : theme;
+  <!-- ⚡ Inline theme bootstrap — runs before <body> to prevent flash of wrong theme -->
+  <script>
+    (function () {
+      var saved = null;
+      try { saved = JSON.parse(localStorage.getItem("lp_theme")); } catch (e) { }
+      var theme = saved || "system";
+      var effective = theme === "system"
+        ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+        : theme;
 
-        document.documentElement.setAttribute("data-theme", effective);
+      document.documentElement.setAttribute("data-theme", effective);
 
-        if (effective === "light") {
-          document.getElementById("themeColorMeta").content = "#f4f4f8";
-          document.getElementById("faviconLink").href        = "appIcon-light.png";
-          document.getElementById("touchIcon").href          = "appIcon-light.png";
-          document.getElementById("touchIcon180").href       = "appIcon-light.png";
-        }
-        // dark is already the default — no DOM changes needed
-      })();
-    </script>
-  </head>
+      if (effective === "light") {
+        document.getElementById("themeColorMeta").content = "#f4f4f8";
+        document.getElementById("faviconLink").href = "appIcon-light.png";
+        document.getElementById("touchIcon").href = "appIcon-light.png";
+        document.getElementById("touchIcon180").href = "appIcon-light.png";
+      }
+      // dark is already the default — no DOM changes needed
+    })();
+  </script>
+</head>
 
-  <body>
-    <div id="app">
-      <div id="header">
-        <div class="hd-row">
-          <div class="logo"><span>Life</span>Planner</div>
+<body>
+  <div id="app">
+    <div id="header">
+      <div class="hd-row">
+        <div class="logo"><span>Life</span>Planner</div>
 
-          <div class="hd-right">
-            <button class="jump-btn" onclick="openJumpDate()">
-              📅 Go to date
-            </button>
-            <button class="theme-toggle" id="themeToggle" onclick="cycleTheme()" title="Toggle theme"></button>
-            <div class="hd-date" id="hdDate"></div>
-          </div>
+        <div class="hd-right">
+          <button class="jump-btn" onclick="openJumpDate()">
+            📅 Go to date
+          </button>
+          <button class="theme-toggle" id="themeToggle" onclick="cycleTheme()" title="Toggle theme"></button>
+          <div class="hd-date" id="hdDate"></div>
         </div>
-
-        <div class="tabs" id="tabs"></div>
-        <div id="header-footer" style="display: none"></div>
       </div>
 
-      <div id="content"></div>
+      <div class="tabs" id="tabs"></div>
+      <div id="header-footer" style="display: none"></div>
     </div>
 
-    <script src="script.js" defer></script>
-  </body>
+    <div id="content"></div>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+
 </html>
